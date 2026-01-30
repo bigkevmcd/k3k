@@ -106,7 +106,8 @@ func TestConfigureNode_MirrorHostNodes_Labels(t *testing.T) {
 			}
 
 			// Call ConfigureNode
-			ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", tt.mirrorHostNodes)
+			err := ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", tt.mirrorHostNodes)
+			assert.NoError(t, err)
 
 			// Assert labels are correctly mirrored
 			assert.Equal(t, tt.expectedLabels, node.Labels, "Labels should be mirrored from host node")
@@ -146,7 +147,8 @@ func TestConfigureNode_MirrorHostNodes_Annotations(t *testing.T) {
 	}
 
 	// Call ConfigureNode with mirrorHostNodes = true
-	ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", true)
+	err := ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", true)
+	assert.NoError(t, err)
 
 	// Assert annotations are correctly mirrored
 	assert.Equal(t, hostAnnotations, node.Annotations, "Annotations should be mirrored from host node")
@@ -169,21 +171,13 @@ func TestConfigureNode_MirrorHostNodes_HostNodeNotFound(t *testing.T) {
 	servicePort := 30250
 
 	// Call ConfigureNode with mirrorHostNodes = true but host node doesn't exist
-	ConfigureNode(setup.logger, node, "test-hostname", servicePort, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", true)
+	err := ConfigureNode(setup.logger, node, "test-hostname", servicePort, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", true)
 
-	// When host node is not found, it copies from an empty/zero-valued node
-	// The node should have nil labels, annotations, and empty spec/status (except the port)
-	assert.Nil(t, node.Labels, "Labels should be nil when host node not found")
-	assert.Nil(t, node.Annotations, "Annotations should be nil when host node not found")
-	assert.Nil(t, node.Finalizers, "Finalizers should be nil when host node not found")
+	// When host node is not found, an error should be returned
+	assert.Error(t, err, "Should return error when host node not found")
 
-	// The service port should still be set
-	assert.Equal(t, int32(servicePort), node.Status.DaemonEndpoints.KubeletEndpoint.Port, "Service port should still be set")
-
-	// Spec should be empty
-	assert.Empty(t, node.Spec.PodCIDR, "PodCIDR should be empty when host node not found")
-	assert.Empty(t, node.Spec.PodCIDRs, "PodCIDRs should be empty when host node not found")
-	assert.Empty(t, node.Spec.ProviderID, "ProviderID should be empty when host node not found")
+	// The original node should remain unchanged
+	assert.Equal(t, "initial-value", node.Labels["initial-label"], "Original labels should be preserved on error")
 }
 
 func TestConfigureNode_MirrorHostNodes_Spec(t *testing.T) {
@@ -226,7 +220,8 @@ func TestConfigureNode_MirrorHostNodes_Spec(t *testing.T) {
 	servicePort := 30250
 
 	// Call ConfigureNode with mirrorHostNodes = true
-	ConfigureNode(setup.logger, node, "test-hostname", servicePort, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", true)
+	err := ConfigureNode(setup.logger, node, "test-hostname", servicePort, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", true)
+	assert.NoError(t, err)
 
 	// Assert spec is correctly mirrored
 	assert.Equal(t, "10.244.0.0/24", node.Spec.PodCIDR, "PodCIDR should be mirrored")
@@ -253,7 +248,8 @@ func TestConfigureNode_NoMirrorHostNodes_Labels(t *testing.T) {
 	}
 
 	// Call ConfigureNode with mirrorHostNodes = false
-	ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	err := ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	assert.NoError(t, err)
 
 	// Assert the required labels are set
 	assert.Equal(t, "true", node.Labels["node.kubernetes.io/exclude-from-external-load-balancers"], "Should have exclude-from-external-load-balancers label")
@@ -277,7 +273,8 @@ func TestConfigureNode_NoMirrorHostNodes_Addresses(t *testing.T) {
 	ip := "10.0.0.5"
 
 	// Call ConfigureNode with mirrorHostNodes = false
-	ConfigureNode(setup.logger, node, hostname, 10250, ip, setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	err := ConfigureNode(setup.logger, node, hostname, 10250, ip, setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	assert.NoError(t, err)
 
 	// Assert addresses are correctly set
 	assert.Equal(t, 2, len(node.Status.Addresses), "Should have 2 addresses")
@@ -312,7 +309,8 @@ func TestConfigureNode_NoMirrorHostNodes_Conditions(t *testing.T) {
 	}
 
 	// Call ConfigureNode with mirrorHostNodes = false
-	ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	err := ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	assert.NoError(t, err)
 
 	// Assert conditions are set correctly
 	assert.Equal(t, 5, len(node.Status.Conditions), "Should have 5 conditions")
@@ -358,7 +356,8 @@ func TestConfigureNode_NoMirrorHostNodes_Version(t *testing.T) {
 	version := "v1.29.2"
 
 	// Call ConfigureNode with mirrorHostNodes = false
-	ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, version, false)
+	err := ConfigureNode(setup.logger, node, "test-hostname", 10250, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, version, false)
+	assert.NoError(t, err)
 
 	// Assert version is correctly set
 	assert.Equal(t, version, node.Status.NodeInfo.KubeletVersion, "KubeletVersion should be set correctly")
@@ -378,7 +377,8 @@ func TestConfigureNode_NoMirrorHostNodes_DaemonEndpoint(t *testing.T) {
 	servicePort := 30250
 
 	// Call ConfigureNode with mirrorHostNodes = false
-	ConfigureNode(setup.logger, node, "test-hostname", servicePort, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	err := ConfigureNode(setup.logger, node, "test-hostname", servicePort, "192.168.1.100", setup.hostClient, setup.virtualClient, setup.virtualCluster, "v1.28.0", false)
+	assert.NoError(t, err)
 
 	// Assert daemon endpoint port is correctly set
 	assert.Equal(t, int32(servicePort), node.Status.DaemonEndpoints.KubeletEndpoint.Port, "Kubelet endpoint port should be set correctly")
