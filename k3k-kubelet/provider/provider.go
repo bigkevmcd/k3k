@@ -510,6 +510,10 @@ func (p *Provider) createPod(ctx context.Context, pod *corev1.Pod) error {
 
 	logger.Info("Pod created on host cluster")
 
+	if p.podNotifier != nil {
+		p.podNotifier(pod)
+	}
+
 	return nil
 }
 

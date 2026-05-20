@@ -17,6 +17,7 @@ import (
 	ctrlfake "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
+	v1beta1 "github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
 
 func Test_mergeEnvVars(t *testing.T) {
@@ -502,6 +503,66 @@ func TestUpdatePodCallsNotifier(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, notifiedPod, "notifier was not called after pod update")
+	assert.Equal(t, podName, notifiedPod.Name)
+	assert.Equal(t, podNamespace, notifiedPod.Namespace)
+}
+
+func TestCreatePodCallsNotifier(t *testing.T) {
+	const (
+		clusterNamespace = "host-ns"
+		clusterName      = "c-test"
+		podNamespace     = "my-namespace"
+		podName          = "my-pod"
+	)
+
+	translator := translate.ToHostTranslator{
+		ClusterName:      clusterName,
+		ClusterNamespace: clusterNamespace,
+	}
+
+	virtualPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: podNamespace,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Name: "my-container", Image: "my-image:v1"},
+			},
+		},
+	}
+	cluster := &v1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      clusterName,
+			Namespace: clusterNamespace,
+		},
+	}
+
+	scheme := runtime.NewScheme()
+	require.NoError(t, corev1.AddToScheme(scheme))
+	require.NoError(t, v1beta1.AddToScheme(scheme))
+
+	hostClient := ctrlfake.NewClientBuilder().WithScheme(scheme).WithObjects(cluster).Build()
+	virtualClient := ctrlfake.NewClientBuilder().WithScheme(scheme).WithObjects(virtualPod).Build()
+
+	p := &Provider{
+		Host:             ClusterContext{Client: hostClient},
+		Virtual:          ClusterContext{Client: virtualClient},
+		ClusterNamespace: clusterNamespace,
+		ClusterName:      clusterName,
+		Translator:       translator,
+		logger:           logr.Discard(),
+	}
+
+	var notifiedPod *corev1.Pod
+	p.NotifyPods(t.Context(), func(pod *corev1.Pod) {
+		notifiedPod = pod
+	})
+
+	err := p.createPod(t.Context(), virtualPod)
+	require.NoError(t, err)
+
+	require.NotNil(t, notifiedPod, "notifier was not called after pod creation")
 	assert.Equal(t, podName, notifiedPod.Name)
 	assert.Equal(t, podNamespace, notifiedPod.Namespace)
 }
