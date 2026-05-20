@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
+	ctrlfake "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 )
@@ -438,6 +439,71 @@ func TestDeletePodCallsNotifier(t *testing.T) {
 	assert.Equal(t, podName, notifiedPod.Name)
 	assert.Equal(t, podNamespace, notifiedPod.Namespace)
 	assert.Equal(t, corev1.PodSucceeded, notifiedPod.Status.Phase)
+}
+
+func TestUpdatePodCallsNotifier(t *testing.T) {
+	const (
+		clusterNamespace = "host-ns"
+		podNamespace     = "my-namespace"
+		podName          = "my-pod"
+	)
+
+	translator := translate.ToHostTranslator{
+		ClusterName:      "c-test",
+		ClusterNamespace: clusterNamespace,
+	}
+
+	virtualPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: podNamespace,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Name: "my-container", Image: "my-image:v1"},
+			},
+		},
+	}
+	hostPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      translator.TranslateName(podNamespace, podName),
+			Namespace: clusterNamespace,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Name: "my-container", Image: "my-image:v1"},
+			},
+		},
+	}
+
+	scheme := runtime.NewScheme()
+	require.NoError(t, corev1.AddToScheme(scheme))
+
+	hostClient := ctrlfake.NewClientBuilder().WithScheme(scheme).WithObjects(hostPod).Build()
+	virtualClient := ctrlfake.NewClientBuilder().WithScheme(scheme).WithObjects(virtualPod).Build()
+
+	p := &Provider{
+		Host:             ClusterContext{Client: hostClient},
+		Virtual:          ClusterContext{Client: virtualClient},
+		ClusterNamespace: clusterNamespace,
+		Translator:       translator,
+		logger:           logr.Discard(),
+	}
+
+	var notifiedPod *corev1.Pod
+	p.NotifyPods(t.Context(), func(pod *corev1.Pod) {
+		notifiedPod = pod
+	})
+
+	updatedPod := virtualPod.DeepCopy()
+	updatedPod.Spec.Containers[0].Image = "my-image:v2"
+
+	err := p.UpdatePod(t.Context(), updatedPod)
+	require.NoError(t, err)
+
+	require.NotNil(t, notifiedPod, "notifier was not called after pod update")
+	assert.Equal(t, podName, notifiedPod.Name)
+	assert.Equal(t, podNamespace, notifiedPod.Namespace)
 }
 
 func newTestProvider(clusterNamespace string, objects ...runtime.Object) *Provider {
