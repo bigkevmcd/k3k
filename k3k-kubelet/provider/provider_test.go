@@ -1,13 +1,19 @@
 package provider
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/go-logr/logr"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 )
@@ -298,5 +304,112 @@ func Test_configureEnv(t *testing.T) {
 			got := p.configureEnv(tt.virtualPod, tt.envs)
 			assert.Equal(t, tt.want, got)
 		})
+	}
+}
+
+func TestDeletePod(t *testing.T) {
+	const (
+		clusterNamespace = "host-ns"
+		podNamespace     = "my-namespace"
+		podName          = "my-pod"
+	)
+
+	translator := translate.ToHostTranslator{
+		ClusterName:      "c-test",
+		ClusterNamespace: clusterNamespace,
+	}
+	hostPodName := translator.TranslateName(podNamespace, podName)
+
+	virtualPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: podNamespace,
+		},
+	}
+	hostPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      hostPodName,
+			Namespace: clusterNamespace,
+		},
+	}
+
+	tests := []struct {
+		name    string
+		objects []runtime.Object
+		wantErr bool
+	}{
+		{
+			name:    "successfully deletes existing pod",
+			objects: []runtime.Object{hostPod},
+			wantErr: false,
+		},
+		{
+			name:    "pod not found is not an error",
+			objects: []runtime.Object{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := newTestProvider(clusterNamespace, tt.objects...)
+			err := p.DeletePod(t.Context(), virtualPod)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestDeletePodServerError(t *testing.T) {
+	const (
+		clusterNamespace = "host-ns"
+		podNamespace     = "my-namespace"
+		podName          = "my-pod"
+	)
+
+	virtualPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: podNamespace,
+		},
+	}
+
+	fakeClientset := fake.NewSimpleClientset()
+	fakeClientset.PrependReactor("delete", "pods", func(_ k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("internal server error")
+	})
+
+	p := &Provider{
+		Host: ClusterContext{
+			CoreClient: fakeClientset.CoreV1(),
+		},
+		ClusterNamespace: clusterNamespace,
+		Translator: translate.ToHostTranslator{
+			ClusterName:      "c-test",
+			ClusterNamespace: clusterNamespace,
+		},
+		logger: logr.Discard(),
+	}
+
+	err := p.DeletePod(t.Context(), virtualPod)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "internal server error")
+}
+
+func newTestProvider(clusterNamespace string, objects ...runtime.Object) *Provider {
+	fakeClient := fake.NewSimpleClientset(objects...)
+	return &Provider{
+		Host: ClusterContext{
+			CoreClient: fakeClient.CoreV1(),
+		},
+		ClusterNamespace: clusterNamespace,
+		Translator: translate.ToHostTranslator{
+			ClusterName:      "c-test",
+			ClusterNamespace: clusterNamespace,
+		},
+		logger: logr.Discard(),
 	}
 }
