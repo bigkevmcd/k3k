@@ -670,6 +670,10 @@ func (p *Provider) updatePod(ctx context.Context, pod *corev1.Pod) error {
 
 	logger.Info("Pod updated in virtual and host cluster")
 
+	if p.podNotifier != nil {
+		p.podNotifier(pod)
+	}
+
 	return nil
 }
 
