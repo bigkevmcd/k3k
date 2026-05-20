@@ -399,6 +399,47 @@ func TestDeletePodServerError(t *testing.T) {
 	assert.Contains(t, err.Error(), "internal server error")
 }
 
+func TestDeletePodCallsNotifier(t *testing.T) {
+	const (
+		clusterNamespace = "host-ns"
+		podNamespace     = "my-namespace"
+		podName          = "my-pod"
+	)
+
+	translator := translate.ToHostTranslator{
+		ClusterName:      "c-test",
+		ClusterNamespace: clusterNamespace,
+	}
+
+	virtualPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: podNamespace,
+		},
+	}
+	hostPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      translator.TranslateName(podNamespace, podName),
+			Namespace: clusterNamespace,
+		},
+	}
+
+	p := newTestProvider(clusterNamespace, hostPod)
+
+	var notifiedPod *corev1.Pod
+	p.NotifyPods(t.Context(), func(pod *corev1.Pod) {
+		notifiedPod = pod
+	})
+
+	err := p.deletePod(t.Context(), virtualPod)
+	require.NoError(t, err)
+
+	require.NotNil(t, notifiedPod, "notifier was not called after pod deletion")
+	assert.Equal(t, podName, notifiedPod.Name)
+	assert.Equal(t, podNamespace, notifiedPod.Namespace)
+	assert.Equal(t, corev1.PodSucceeded, notifiedPod.Status.Phase)
+}
+
 func newTestProvider(clusterNamespace string, objects ...runtime.Object) *Provider {
 	fakeClient := fake.NewSimpleClientset(objects...)
 	return &Provider{

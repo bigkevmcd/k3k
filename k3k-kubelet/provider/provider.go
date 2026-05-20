@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
+	"github.com/virtual-kubelet/virtual-kubelet/node"
 	"github.com/virtual-kubelet/virtual-kubelet/node/api"
 	"github.com/virtual-kubelet/virtual-kubelet/node/nodeutil"
 	"k8s.io/apimachinery/pkg/labels"
@@ -45,6 +46,7 @@ import (
 
 // check at compile time if the Provider implements the nodeutil.Provider interface
 var _ nodeutil.Provider = (*Provider)(nil)
+var _ node.PodNotifier = (*Provider)(nil)
 
 // ClusterContext includes the controller runtime manager and clients
 type ClusterContext struct {
@@ -55,7 +57,6 @@ type ClusterContext struct {
 }
 
 // Provider implements nodetuil.Provider from virtual Kubelet.
-// TODO: Implement NotifyPods and the required usage so that this can be an async provider
 type Provider struct {
 	Host             ClusterContext
 	Virtual          ClusterContext
@@ -66,6 +67,9 @@ type Provider struct {
 	dnsIP            string
 	agentHostname    string
 	logger           logr.Logger
+
+	// Provided by the NotifyPods method.
+	podNotifier func(pod *corev1.Pod)
 }
 
 var ErrRetryTimeout = errors.New("provider timed out")
@@ -973,4 +977,11 @@ func (p *Provider) configureEnvFrom(virtualPod *corev1.Pod, envs []corev1.EnvFro
 	}
 
 	return resultingEnvVars
+}
+
+// NotifyPods is an implementation of the PodNotifer interface from virtual-kubelet.
+//
+// The provider is expected to call the notifier callback with the updated pod whenever there is a change in the pod's status or spec.
+func (p *Provider) NotifyPods(ctx context.Context, notifier func(*corev1.Pod)) {
+	p.podNotifier = notifier
 }
