@@ -725,6 +725,13 @@ func (p *Provider) deletePod(ctx context.Context, pod *corev1.Pod) error {
 
 	logger.Info("Pod deleted from host cluster")
 
+	if p.podNotifier != nil {
+		terminalPod := pod.DeepCopy()
+		terminalPod.Status.Phase = corev1.PodSucceeded
+
+		p.podNotifier(terminalPod)
+	}
+
 	return nil
 }
 
