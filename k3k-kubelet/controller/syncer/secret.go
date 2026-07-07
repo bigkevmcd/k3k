@@ -24,8 +24,11 @@ const (
 	secretFinalizerName  = "secret.k3k.io/finalizer"
 )
 
+// SecretSyncer is a controller that synchronizes secrets from the virtual
+// cluster to the host cluster.
 type SecretSyncer struct {
-	// SyncerContext contains all client information for host and virtual cluster
+	// SyncerContext contains all client information for host and
+	// virtual cluster.
 	*SyncerContext
 }
 
@@ -33,7 +36,8 @@ func (s *SecretSyncer) Name() string {
 	return secretControllerName
 }
 
-// AddSecretSyncer adds secret syncer controller to the manager of the virtual cluster
+// AddSecretSyncer adds secret syncer controller to the manager of the virtual
+// cluster
 func AddSecretSyncer(ctx context.Context, virtMgr, hostMgr manager.Manager, clusterName, clusterNamespace string) error {
 	reconciler := SecretSyncer{
 		SyncerContext: &SyncerContext{
@@ -57,10 +61,9 @@ func AddSecretSyncer(ctx context.Context, virtMgr, hostMgr manager.Manager, clus
 }
 
 func (r *SecretSyncer) filterResources(object client.Object) bool {
-	var cluster v1beta1.Cluster
-
 	ctx := context.Background()
 
+	var cluster v1beta1.Cluster
 	if err := r.HostClient.Get(ctx, types.NamespacedName{Name: r.ClusterName, Namespace: r.ClusterNamespace}, &cluster); err != nil {
 		return false
 	}
@@ -83,17 +86,15 @@ func (r *SecretSyncer) filterResources(object client.Object) bool {
 
 // Reconcile implements reconcile.Reconciler and synchronizes the objects in objs to the host cluster
 func (s *SecretSyncer) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
-	log := ctrl.LoggerFrom(ctx).WithValues("cluster", s.ClusterName, "clusterNamespace", s.ClusterName)
+	log := ctrl.LoggerFrom(ctx).WithValues("cluster", s.ClusterName, "clusterNamespace", s.ClusterNamespace)
 	ctx = ctrl.LoggerInto(ctx, log)
 
 	var cluster v1beta1.Cluster
-
 	if err := s.HostClient.Get(ctx, types.NamespacedName{Name: s.ClusterName, Namespace: s.ClusterNamespace}, &cluster); err != nil {
 		return reconcile.Result{}, err
 	}
 
 	var virtualSecret corev1.Secret
-
 	if err := s.VirtualClient.Get(ctx, req.NamespacedName, &virtualSecret); err != nil {
 		return reconcile.Result{}, client.IgnoreNotFound(err)
 	}
@@ -141,7 +142,21 @@ func (s *SecretSyncer) Reconcile(ctx context.Context, req reconcile.Request) (re
 	// TODO: Add option to keep labels/annotation set by the host cluster
 	log.Info("updating Secret on the host cluster")
 
-	return reconcile.Result{}, s.HostClient.Update(ctx, syncedSecret)
+	// Update the existing host secret to preserve ResourceVersion and other metadata
+	// Always update metadata (labels, annotations) as these can be changed even on immutable secrets
+	hostSecret.Labels = syncedSecret.Labels
+	hostSecret.Annotations = syncedSecret.Annotations
+
+	// Only update data, stringData, type, and immutable fields if the secret is not immutable
+	// Immutable secrets cannot have their data or type modified after creation
+	if hostSecret.Immutable == nil || !*hostSecret.Immutable {
+		hostSecret.Data = syncedSecret.Data
+		hostSecret.StringData = syncedSecret.StringData
+		hostSecret.Type = syncedSecret.Type
+		hostSecret.Immutable = syncedSecret.Immutable
+	}
+
+	return reconcile.Result{}, s.HostClient.Update(ctx, &hostSecret)
 }
 
 // translateSecret will translate a given secret created in the virtual cluster and

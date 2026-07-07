@@ -3,17 +3,16 @@ package syncer
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -83,7 +82,7 @@ func (c *ConfigMapSyncer) filterResources(object client.Object) bool {
 
 // Reconcile implements reconcile.Reconciler and synchronizes the objects in objs to the host cluster
 func (c *ConfigMapSyncer) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
-	log := ctrl.LoggerFrom(ctx).WithValues("cluster", c.ClusterName, "clusterNamespace", c.ClusterName)
+	log := ctrl.LoggerFrom(ctx).WithValues("cluster", c.ClusterName, "clusterNamespace", c.ClusterNamespace)
 	ctx = ctrl.LoggerInto(ctx, log)
 
 	var cluster v1beta1.Cluster
@@ -141,7 +140,20 @@ func (c *ConfigMapSyncer) Reconcile(ctx context.Context, req reconcile.Request) 
 	// TODO: Add option to keep labels/annotation set by the host cluster
 	log.Info("updating ConfigMap on the host cluster")
 
-	return reconcile.Result{}, c.HostClient.Update(ctx, syncedConfigMap)
+	// Update the existing host configmap to preserve ResourceVersion and other metadata
+	// Always update metadata (labels, annotations) as these can be changed even on immutable configmaps
+	hostConfigMap.Labels = syncedConfigMap.Labels
+	hostConfigMap.Annotations = syncedConfigMap.Annotations
+
+	// Only update data and binaryData fields if the configmap is not immutable
+	// Immutable configmaps cannot have their data modified after creation
+	if hostConfigMap.Immutable == nil || !*hostConfigMap.Immutable {
+		hostConfigMap.Data = syncedConfigMap.Data
+		hostConfigMap.BinaryData = syncedConfigMap.BinaryData
+		hostConfigMap.Immutable = syncedConfigMap.Immutable
+	}
+
+	return reconcile.Result{}, c.HostClient.Update(ctx, &hostConfigMap)
 }
 
 // translateConfigMap will translate a given configMap created in the virtual cluster and
