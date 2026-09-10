@@ -355,6 +355,10 @@ type ConfigMapSyncConfig struct {
 	//
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
+
+	// MatchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty"`
 }
 
 // IngressSyncConfig specifies the sync options for Ingresses.
