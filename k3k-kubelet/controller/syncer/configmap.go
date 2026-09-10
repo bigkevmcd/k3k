@@ -13,6 +13,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
@@ -58,6 +59,8 @@ func AddConfigMapSyncer(ctx context.Context, virtMgr, hostMgr manager.Manager, c
 		Complete(&reconciler)
 }
 
+// filterResources determines whether the given object should be processed based on the cluster's config map sync configuration.
+// No error is returned; false indicates the resource should not be processed.
 func (c *ConfigMapSyncer) filterResources(object client.Object) bool {
 	var cluster v1beta1.Cluster
 
@@ -75,12 +78,21 @@ func (c *ConfigMapSyncer) filterResources(object client.Object) bool {
 		return object.GetDeletionTimestamp() != nil
 	}
 
-	labelSelector := labels.SelectorFromSet(syncConfig.Selector)
-	if labelSelector.Empty() {
+	labelSelector := &metav1.LabelSelector{
+		MatchLabels:      syncConfig.Selector,
+		MatchExpressions: syncConfig.MatchExpressions,
+	}
+
+	selector, err := metav1.LabelSelectorAsSelector(labelSelector)
+	if err != nil {
+		return false
+	}
+
+	if selector.Empty() {
 		return true
 	}
 
-	return labelSelector.Matches(labels.Set(object.GetLabels()))
+	return selector.Matches(labels.Set(object.GetLabels()))
 }
 
 // Reconcile implements reconcile.Reconciler and synchronizes the objects in objs to the host cluster
