@@ -186,4 +186,83 @@ var _ = When("a shared mode cluster is created", Ordered, Label(syncTestsLabel),
 				Should(Succeed())
 		})
 	})
+
+	When("setting match expressions on the storage class sync", Ordered, func() {
+		var storageClassGold, storageClassBronze *storagev1.StorageClass
+
+		BeforeAll(func() {
+			newTieredStorageClass := func(tier string) *storagev1.StorageClass {
+				GinkgoHelper()
+
+				sc := &storagev1.StorageClass{
+					ObjectMeta: metav1.ObjectMeta{
+						GenerateName: "sc-",
+						Labels: map[string]string{
+							"e2e.k3k.io/tier": tier,
+						},
+					},
+					Provisioner: "my-provisioner",
+				}
+
+				sc, err := k8s.StorageV1().StorageClasses().Create(ctx, sc, metav1.CreateOptions{})
+				Expect(err).To(Not(HaveOccurred()))
+
+				DeferCleanup(func() {
+					err := k8s.StorageV1().StorageClasses().Delete(context.Background(), sc.Name, metav1.DeleteOptions{})
+					Expect(client.IgnoreNotFound(err)).To(Not(HaveOccurred()))
+				})
+
+				return sc
+			}
+
+			storageClassGold = newTieredStorageClass("gold")
+			storageClassBronze = newTieredStorageClass("bronze")
+
+			GinkgoWriter.Println("Setting match expressions on the storage class sync")
+
+			original := virtualCluster.Cluster.DeepCopy()
+
+			virtualCluster.Cluster.Spec.Sync.StorageClasses.MatchExpressions = []metav1.LabelSelectorRequirement{
+				{
+					Key:      "e2e.k3k.io/tier",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"gold", "silver"},
+				},
+				{
+					// invalid expressions are ignored, the valid ones are still applied
+					Key:      "e2e.k3k.io/tier",
+					Operator: "Bogus",
+				},
+			}
+
+			err := k8sClient.Patch(ctx, virtualCluster.Cluster, client.MergeFrom(original))
+			Expect(err).To(Not(HaveOccurred()))
+		})
+
+		It("will sync only the host storage classes matching the expressions", func() {
+			Eventually(func(g Gomega) {
+				_, err := virtualCluster.Client.StorageV1().StorageClasses().Get(ctx, storageClassGold.Name, metav1.GetOptions{})
+				g.Expect(err).To(Not(HaveOccurred()))
+
+				_, err = virtualCluster.Client.StorageV1().StorageClasses().Get(ctx, storageClassBronze.Name, metav1.GetOptions{})
+				g.Expect(apierrors.IsNotFound(err)).To(BeTrue(), "expected %s to not be synced, got: %v", storageClassBronze.Name, err)
+			}).
+				MustPassRepeatedly(5).
+				WithPolling(time.Second).
+				WithTimeout(time.Second * 30).
+				Should(Succeed())
+		})
+
+		It("will remove the previously synced storage classes not matching the expressions", func() {
+			Eventually(func(g Gomega) {
+				// storageClassEnabled has the sync enabled, but not the tier label
+				_, err := virtualCluster.Client.StorageV1().StorageClasses().Get(ctx, storageClassEnabled.Name, metav1.GetOptions{})
+				g.Expect(apierrors.IsNotFound(err)).To(BeTrue(), "expected %s to be removed, got: %v", storageClassEnabled.Name, err)
+			}).
+				MustPassRepeatedly(5).
+				WithPolling(time.Second).
+				WithTimeout(time.Second * 30).
+				Should(Succeed())
+		})
+	})
 })

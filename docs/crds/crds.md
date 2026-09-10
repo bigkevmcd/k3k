@@ -217,6 +217,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | true | Required: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 
 
 #### CredentialSource
@@ -399,6 +400,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | false | Required: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 | `disableTLSSecretTranslation` _boolean_ | DisableTLSSecretTranslation is an on/off switch for translating TLS secrets<br />from virtual cluster to host cluster | false | Optional: \{\} <br /> |
 
 
@@ -483,6 +485,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | true | Required: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 
 
 #### PodSecurityAdmissionLevel
@@ -515,6 +518,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | false | Required: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 
 
 #### SecretMount
@@ -557,6 +561,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | true | Optional: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 
 
 #### ServiceSyncConfig
@@ -574,6 +579,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | true | Required: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 
 
 #### StorageClassSyncConfig
@@ -591,6 +597,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled is an on/off switch for syncing resources. | false | Required: \{\} <br /> |
 | `selector` _object (keys:string, values:string)_ | Selector specifies set of labels of the resources that will be synced, if empty<br />then all resources of the given type will be synced. |  | Optional: \{\} <br /> |
+| `matchExpressions` _[LabelSelectorRequirement](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta) array_ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. |  | Optional: \{\} <br /> |
 
 
 #### SyncConfig

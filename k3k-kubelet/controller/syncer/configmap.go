@@ -3,7 +3,6 @@ package syncer
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
+	"github.com/rancher/k3k/pkg/controller"
 )
 
 const (
@@ -53,6 +53,8 @@ func AddConfigMapSyncer(ctx context.Context, virtMgr, hostMgr manager.Manager, c
 		Complete(&reconciler)
 }
 
+// filterResources determines whether the given object should be processed based on the cluster's config map sync configuration.
+// No error is returned; false indicates the resource should not be processed.
 func (c *ConfigMapSyncer) filterResources(object client.Object) bool {
 	var cluster v1beta1.Cluster
 
@@ -65,17 +67,7 @@ func (c *ConfigMapSyncer) filterResources(object client.Object) bool {
 	// check for configMap Sync Config
 	syncConfig := cluster.Spec.Sync.ConfigMaps
 
-	// If syncing is disabled, only process deletions to allow for cleanup.
-	if !syncConfig.Enabled {
-		return object.GetDeletionTimestamp() != nil
-	}
-
-	labelSelector := labels.SelectorFromSet(syncConfig.Selector)
-	if labelSelector.Empty() {
-		return true
-	}
-
-	return labelSelector.Matches(labels.Set(object.GetLabels()))
+	return controller.FilterResource(ctx, object, syncConfig.Enabled, syncConfig.Selector, syncConfig.MatchExpressions)
 }
 
 // Reconcile implements reconcile.Reconciler and synchronizes the objects in objs to the host cluster

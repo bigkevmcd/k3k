@@ -14,7 +14,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
@@ -778,9 +777,8 @@ func (c *Reconciler) ensureStorageClasses(ctx context.Context, cluster *v1beta1.
 		}
 
 		// if selector doesn't match -> continue
-		// an empty selector matche everything
-		selector := labels.SelectorFromSet(appliedSync.StorageClasses.Selector)
-		if !selector.Matches(labels.Set(sc.Labels)) {
+		// an empty selector matches everything
+		if !controller.FilterResource(ctx, &sc, true, appliedSync.StorageClasses.Selector, appliedSync.StorageClasses.MatchExpressions) {
 			log.V(1).Info("selector not matching", "sc-name", sc.Name)
 			continue
 		}

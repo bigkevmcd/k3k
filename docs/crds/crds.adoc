@@ -365,6 +365,8 @@ _Appears In:_
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
 
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
+
 |===
 
 
@@ -615,6 +617,8 @@ _Appears In:_
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
 
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
+
 | *`disableTLSSecretTranslation`* __boolean__ | DisableTLSSecretTranslation is an on/off switch for translating TLS secrets +
 from virtual cluster to host cluster + | false | Optional: \{} +
 
@@ -742,6 +746,8 @@ _Appears In:_
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
 
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
+
 |===
 
 
@@ -782,6 +788,8 @@ _Appears In:_
 
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
+
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
 
 |===
 
@@ -869,6 +877,8 @@ _Appears In:_
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
 
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
+
 |===
 
 
@@ -893,6 +903,8 @@ _Appears In:_
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
 
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
+
 |===
 
 
@@ -916,6 +928,8 @@ _Appears In:_
 
 | *`selector`* __object (keys:string, values:string)__ | Selector specifies set of labels of the resources that will be synced, if empty +
 then all resources of the given type will be synced. + |  | Optional: \{} +
+
+| *`matchExpressions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselectorrequirement-v1-meta[$$LabelSelectorRequirement$$] array__ | MatchExpressions is a list of label selector requirements. The requirements are ANDed. + |  | Optional: \{} +
 
 |===
 

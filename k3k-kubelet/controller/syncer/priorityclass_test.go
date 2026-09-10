@@ -20,12 +20,6 @@ import (
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
 
-const (
-	testClusterName      = "my-cluster"
-	testClusterNamespace = "host-ns"
-	virtualNamespace     = "virtual-ns"
-)
-
 func TestPriorityClassSyncerTranslatePriorityClass(t *testing.T) {
 	syncer := &PriorityClassSyncer{
 		Context: &Context{
@@ -80,6 +74,36 @@ func TestPriorityClassSyncerFilterResources(t *testing.T) {
 			syncConfig: v1beta1.PriorityClassSyncConfig{
 				Enabled:  true,
 				Selector: map[string]string{"environment": "staging"},
+			},
+			object:   priorityClass,
+			filtered: false,
+		},
+		{
+			name: "enabled matching requirements",
+			syncConfig: v1beta1.PriorityClassSyncConfig{
+				Enabled: true,
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{
+						Key:      "environment",
+						Operator: metav1.LabelSelectorOpIn,
+						Values:   []string{"production", "staging"},
+					},
+				},
+			},
+			object:   priorityClass,
+			filtered: true,
+		},
+		{
+			name: "enabled non-matching requirements",
+			syncConfig: v1beta1.PriorityClassSyncConfig{
+				Enabled: true,
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{
+						Key:      "environment",
+						Operator: metav1.LabelSelectorOpNotIn,
+						Values:   []string{"production", "staging"},
+					},
+				},
 			},
 			object:   priorityClass,
 			filtered: false,
@@ -188,23 +212,4 @@ func newTestPriorityClass(name string, value int32, labels map[string]string) *s
 		},
 		Value: value,
 	}
-}
-
-func newTestCluster(opts ...func(*v1beta1.Cluster)) *v1beta1.Cluster {
-	c := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testClusterName,
-			Namespace: testClusterNamespace,
-			UID:       types.UID("cluster-uid"),
-		},
-		Spec: v1beta1.ClusterSpec{
-			Sync: &v1beta1.SyncConfig{},
-		},
-	}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-
-	return c
 }
