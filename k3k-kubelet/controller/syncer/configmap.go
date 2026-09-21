@@ -3,7 +3,6 @@ package syncer
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -13,7 +12,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
@@ -68,26 +66,7 @@ func (c *ConfigMapSyncer) filterResources(object client.Object) bool {
 	// check for configMap Sync Config
 	syncConfig := cluster.Spec.Sync.ConfigMaps
 
-	// If syncing is disabled, only process deletions to allow for cleanup.
-	if !syncConfig.Enabled {
-		return object.GetDeletionTimestamp() != nil
-	}
-
-	labelSelector := &metav1.LabelSelector{
-		MatchLabels:      syncConfig.Selector,
-		MatchExpressions: syncConfig.MatchExpressions,
-	}
-
-	selector, err := metav1.LabelSelectorAsSelector(labelSelector)
-	if err != nil {
-		return false
-	}
-
-	if selector.Empty() {
-		return true
-	}
-
-	return selector.Matches(labels.Set(object.GetLabels()))
+	return filterResource(object, syncConfig.Enabled, syncConfig.Selector, syncConfig.MatchExpressions)
 }
 
 // Reconcile implements reconcile.Reconciler and synchronizes the objects in objs to the host cluster

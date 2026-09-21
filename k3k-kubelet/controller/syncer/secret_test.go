@@ -19,77 +19,71 @@ import (
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
 
-const (
-	testClusterName      = "my-cluster"
-	testClusterNamespace = "host-ns"
-	virtualNamespace     = "virtual-ns"
-)
-
-func TestConfigMapSyncerName(t *testing.T) {
-	syncer := &ConfigMapSyncer{}
-	assert.Equal(t, configMapControllerName, syncer.Name())
+func TestSecretSyncerName(t *testing.T) {
+	syncer := &SecretSyncer{}
+	assert.Equal(t, secretControllerName, syncer.Name())
 }
 
-func TestConfigMapSyncerTranslateConfigMap(t *testing.T) {
-	syncer := &ConfigMapSyncer{
+func TestSecretSyncerTranslateSecret(t *testing.T) {
+	syncer := &SecretSyncer{
 		Context: &Context{
 			Translator: translate.ToHostTranslator{
 				ClusterName:      testClusterName,
 				ClusterNamespace: testClusterNamespace,
 			},
 		}}
-	virtualConfigMap := newTestConfigMap("settings", map[string]string{"team": "platform"})
+	virtualSecret := newTestSecret("settings", map[string]string{"team": "platform"})
 
-	hostConfigMap := syncer.translateConfigMap(virtualConfigMap)
+	hostSecret := syncer.translateSecret(virtualSecret)
 
-	assert.Equal(t, syncer.Translator.TranslateName(virtualNamespace, "settings"), hostConfigMap.Name)
-	assert.Equal(t, testClusterNamespace, hostConfigMap.Namespace)
-	assert.Equal(t, "value", hostConfigMap.Data["key"])
-	assert.Equal(t, "settings", hostConfigMap.Annotations[translate.ResourceNameAnnotation])
-	assert.Equal(t, virtualNamespace, hostConfigMap.Annotations[translate.ResourceNamespaceAnnotation])
-	assert.Equal(t, testClusterName, hostConfigMap.Labels[translate.ClusterNameLabel])
-	assert.Equal(t, "settings", virtualConfigMap.Name)
-	assert.Equal(t, virtualNamespace, virtualConfigMap.Namespace)
+	assert.Equal(t, syncer.Translator.TranslateName(virtualNamespace, "settings"), hostSecret.Name)
+	assert.Equal(t, testClusterNamespace, hostSecret.Namespace)
+	assert.Equal(t, []byte("value"), hostSecret.Data["key"])
+	assert.Equal(t, "settings", hostSecret.Annotations[translate.ResourceNameAnnotation])
+	assert.Equal(t, virtualNamespace, hostSecret.Annotations[translate.ResourceNamespaceAnnotation])
+	assert.Equal(t, testClusterName, hostSecret.Labels[translate.ClusterNameLabel])
+	assert.Equal(t, "settings", virtualSecret.Name)
+	assert.Equal(t, virtualNamespace, virtualSecret.Namespace)
 }
 
-func TestConfigMapSyncerFilterResources(t *testing.T) {
-	configMap := newTestConfigMap("settings", map[string]string{"environment": "production"})
+func TestSecretSyncerFilterResources(t *testing.T) {
+	Secret := newTestSecret("settings", map[string]string{"environment": "production"})
 
 	tests := []struct {
 		name       string
-		syncConfig v1beta1.ConfigMapSyncConfig
+		syncConfig v1beta1.SecretSyncConfig
 		object     client.Object
 		filtered   bool
 	}{
 		{
 			name: "enabled with no selector",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.SecretSyncConfig{
 				Enabled: true,
 			},
-			object:   configMap,
+			object:   Secret,
 			filtered: true,
 		},
 		{
 			name: "enabled matching selector",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.SecretSyncConfig{
 				Enabled:  true,
 				Selector: map[string]string{"environment": "production"},
 			},
-			object:   configMap,
+			object:   Secret,
 			filtered: true,
 		},
 		{
 			name: "enabled non-matching selector",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.SecretSyncConfig{
 				Enabled:  true,
 				Selector: map[string]string{"environment": "staging"},
 			},
-			object:   configMap,
+			object:   Secret,
 			filtered: false,
 		},
 		{
 			name: "enabled matching requirements",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.SecretSyncConfig{
 				Enabled: true,
 				MatchExpressions: []metav1.LabelSelectorRequirement{
 					{
@@ -99,12 +93,12 @@ func TestConfigMapSyncerFilterResources(t *testing.T) {
 					},
 				},
 			},
-			object:   configMap,
+			object:   Secret,
 			filtered: true,
 		},
 		{
 			name: "enabled non-matching requirements",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.SecretSyncConfig{
 				Enabled: true,
 				MatchExpressions: []metav1.LabelSelectorRequirement{
 					{
@@ -114,20 +108,20 @@ func TestConfigMapSyncerFilterResources(t *testing.T) {
 					},
 				},
 			},
-			object:   configMap,
+			object:   Secret,
 			filtered: false,
 		},
 		{
 			name:       "disabled non-deletion",
-			syncConfig: v1beta1.ConfigMapSyncConfig{},
-			object:     configMap,
+			syncConfig: v1beta1.SecretSyncConfig{},
+			object:     Secret,
 			filtered:   false,
 		},
 		{
 			name:       "disabled deletion",
-			syncConfig: v1beta1.ConfigMapSyncConfig{},
+			syncConfig: v1beta1.SecretSyncConfig{},
 			object: func() client.Object {
-				deleted := configMap.DeepCopy()
+				deleted := Secret.DeepCopy()
 				deletionTime := metav1.NewTime(time.Now())
 				deleted.DeletionTimestamp = &deletionTime
 
@@ -139,55 +133,55 @@ func TestConfigMapSyncerFilterResources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			syncer := newConfigMapSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
-				c.Spec.Sync.ConfigMaps = tt.syncConfig
+			syncer := newSecretSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
+				c.Spec.Sync.Secrets = tt.syncConfig
 			}), nil)
 			assert.Equal(t, tt.filtered, syncer.filterResources(tt.object))
 		})
 	}
 }
 
-func TestConfigMapSyncerReconcile(t *testing.T) {
-	virtualObject := newTestConfigMap("settings", nil)
+func TestSecretSyncerReconcile(t *testing.T) {
+	virtualObject := newTestSecret("settings", nil)
 	cluster := newTestCluster(func(c *v1beta1.Cluster) {
-		c.Spec.Sync.ConfigMaps = v1beta1.ConfigMapSyncConfig{Enabled: true}
+		c.Spec.Sync.Secrets = v1beta1.SecretSyncConfig{Enabled: true}
 	})
-	syncer := newConfigMapSyncer(t, cluster, []client.Object{virtualObject})
+	syncer := newSecretSyncer(t, cluster, []client.Object{virtualObject})
 	request := reconcile.Request{NamespacedName: client.ObjectKeyFromObject(virtualObject)}
 
 	result, err := syncer.Reconcile(t.Context(), request)
 	require.NoError(t, err)
 	assert.Equal(t, reconcile.Result{}, result)
 
-	var gotVirtual corev1.ConfigMap
+	var gotVirtual corev1.Secret
 	require.NoError(t, syncer.VirtualClient.Get(t.Context(), request.NamespacedName, &gotVirtual))
-	assert.Contains(t, gotVirtual.Finalizers, configMapFinalizerName)
+	assert.Contains(t, gotVirtual.Finalizers, secretFinalizerName)
 
 	hostKey := syncer.Translator.NamespacedName(virtualObject)
 
-	var gotHost corev1.ConfigMap
+	var gotHost corev1.Secret
 	require.NoError(t, syncer.HostClient.Get(t.Context(), hostKey, &gotHost))
 	assert.Equal(t, virtualObject.Data, gotHost.Data)
 	assert.Equal(t, cluster.UID, gotHost.OwnerReferences[0].UID)
 
-	gotVirtual.Data["key"] = "updated"
+	gotVirtual.Data["key"] = []byte("updated")
 	require.NoError(t, syncer.VirtualClient.Update(t.Context(), &gotVirtual))
 	_, err = syncer.Reconcile(t.Context(), request)
 	require.NoError(t, err)
 	require.NoError(t, syncer.HostClient.Get(t.Context(), hostKey, &gotHost))
-	assert.Equal(t, "updated", gotHost.Data["key"])
+	assert.Equal(t, []byte("updated"), gotHost.Data["key"])
 }
 
-func TestConfigMapSyncerReconcileNotFound(t *testing.T) {
-	syncer := newConfigMapSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
-		c.Spec.Sync.ConfigMaps = v1beta1.ConfigMapSyncConfig{Enabled: true}
+func TestSecretSyncerReconcileNotFound(t *testing.T) {
+	syncer := newSecretSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
+		c.Spec.Sync.Secrets = v1beta1.SecretSyncConfig{Enabled: true}
 	}), nil)
 
 	_, err := syncer.Reconcile(t.Context(), reconcile.Request{NamespacedName: types.NamespacedName{Name: "missing", Namespace: virtualNamespace}})
 	require.NoError(t, err)
 }
 
-func newConfigMapSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects []client.Object, hostObjects ...client.Object) *ConfigMapSyncer {
+func newSecretSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects []client.Object, hostObjects ...client.Object) *SecretSyncer {
 	t.Helper()
 
 	scheme := runtime.NewScheme()
@@ -196,7 +190,7 @@ func newConfigMapSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects [
 
 	hostObjects = append(hostObjects, cluster)
 
-	return &ConfigMapSyncer{
+	return &SecretSyncer{
 		Context: &Context{
 			VirtualClient: fake.NewClientBuilder().WithScheme(scheme).WithObjects(virtualObjects...).Build(),
 			HostClient:    fake.NewClientBuilder().WithScheme(scheme).WithObjects(hostObjects...).Build(),
@@ -209,32 +203,13 @@ func newConfigMapSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects [
 		},
 	}
 }
-
-func newTestCluster(opts ...func(*v1beta1.Cluster)) *v1beta1.Cluster {
-	c := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testClusterName,
-			Namespace: testClusterNamespace,
-			UID:       types.UID("cluster-uid"),
-		},
-		Spec: v1beta1.ClusterSpec{
-			Sync: &v1beta1.SyncConfig{},
-		},
-	}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-	return c
-}
-
-func newTestConfigMap(name string, labels map[string]string) *corev1.ConfigMap {
-	return &corev1.ConfigMap{
+func newTestSecret(name string, labels map[string]string) *corev1.Secret {
+	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: virtualNamespace,
 			Labels:    labels,
 		},
-		Data: map[string]string{"key": "value"},
+		Data: map[string][]byte{"key": []byte("value")},
 	}
 }

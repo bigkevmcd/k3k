@@ -3,7 +3,6 @@ package syncer
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -65,17 +64,7 @@ func (s *SecretSyncer) filterResources(object client.Object) bool {
 	// check for Secrets Sync Config
 	syncConfig := cluster.Spec.Sync.Secrets
 
-	// If syncing is disabled, only process deletions to allow for cleanup.
-	if !syncConfig.Enabled {
-		return object.GetDeletionTimestamp() != nil
-	}
-
-	labelSelector := labels.SelectorFromSet(syncConfig.Selector)
-	if labelSelector.Empty() {
-		return true
-	}
-
-	return labelSelector.Matches(labels.Set(object.GetLabels()))
+	return filterResource(object, syncConfig.Enabled, syncConfig.Selector, syncConfig.MatchExpressions)
 }
 
 // Reconcile implements reconcile.Reconciler and synchronizes the objects in objs to the host cluster

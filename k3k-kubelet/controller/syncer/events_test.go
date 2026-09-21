@@ -1,7 +1,6 @@
 package syncer
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -236,7 +235,7 @@ func TestEventSyncerReconcile(t *testing.T) {
 				},
 			}
 
-			result, err := syncer.Reconcile(context.Background(), reconcile.Request{
+			result, err := syncer.Reconcile(t.Context(), reconcile.Request{
 				NamespacedName: types.NamespacedName{
 					Name:      tt.receivedEvent.Name,
 					Namespace: tt.receivedEvent.Namespace,
@@ -290,7 +289,7 @@ func TestEventSyncerReconcileNotFound(t *testing.T) {
 		},
 	}
 
-	result, err := syncer.Reconcile(context.Background(), reconcile.Request{
+	result, err := syncer.Reconcile(t.Context(), reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      "non-existent-event",
 			Namespace: "host-ns",

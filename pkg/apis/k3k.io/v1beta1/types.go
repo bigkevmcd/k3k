@@ -325,6 +325,10 @@ type SecretSyncConfig struct {
 	//
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
+
+	// MatchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty"`
 }
 
 // ServiceSyncConfig specifies the sync options for Services.
@@ -340,6 +344,10 @@ type ServiceSyncConfig struct {
 	//
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
+
+	// MatchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty"`
 }
 
 // ConfigMapSyncConfig specifies the sync options for ConfigMaps.
@@ -375,6 +383,10 @@ type IngressSyncConfig struct {
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
 
+	// MatchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty"`
+
 	// DisableTLSSecretTranslation is an on/off switch for translating TLS secrets
 	// from virtual cluster to host cluster
 	//
@@ -396,6 +408,10 @@ type PersistentVolumeClaimSyncConfig struct {
 	//
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
+
+	// MatchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty"`
 }
 
 // PriorityClassSyncConfig specifies the sync options for PriorityClasses.
@@ -411,6 +427,10 @@ type PriorityClassSyncConfig struct {
 	//
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
+
+	// MatchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty"`
 }
 
 // StorageClassSyncConfig specifies the sync options for StorageClasses.

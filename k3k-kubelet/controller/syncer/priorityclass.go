@@ -2,9 +2,9 @@ package syncer
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -88,17 +88,7 @@ func (r *PriorityClassSyncer) filterResources(object ctrlruntimeclient.Object) b
 	// check for priorityClassConfig
 	syncConfig := cluster.Spec.Sync.PriorityClasses
 
-	// If syncing is disabled, only process deletions to allow for cleanup.
-	if !syncConfig.Enabled {
-		return object.GetDeletionTimestamp() != nil
-	}
-
-	labelSelector := labels.SelectorFromSet(syncConfig.Selector)
-	if labelSelector.Empty() {
-		return true
-	}
-
-	return labelSelector.Matches(labels.Set(object.GetLabels()))
+	return filterResource(object, syncConfig.Enabled, syncConfig.Selector, syncConfig.MatchExpressions)
 }
 
 // Reconcile creates, updates or deletes the host PriorityClass matching a virtual one.
@@ -150,16 +140,21 @@ func (r *PriorityClassSyncer) Reconcile(ctx context.Context, req reconcile.Reque
 		}
 	}
 
-	// create the priorityClass on the host
-	log.Info("creating the priorityClass for the first time on the host cluster")
-
-	err := r.HostClient.Create(ctx, hostPriorityClass)
-	if err != nil {
-		if !apierrors.IsAlreadyExists(err) {
+	var existingPriorityClass schedulingv1.PriorityClass
+	if err := r.HostClient.Get(ctx, ctrlruntimeclient.ObjectKeyFromObject(hostPriorityClass), &existingPriorityClass); err != nil {
+		if !apierrors.IsNotFound(err) {
 			return reconcile.Result{}, err
 		}
 
-		return reconcile.Result{}, r.HostClient.Update(ctx, hostPriorityClass)
+		log.Info("creating the priorityClass for the first time on the host cluster")
+		return reconcile.Result{}, r.HostClient.Create(ctx, hostPriorityClass)
+	}
+
+	hostPriorityClass.ResourceVersion = existingPriorityClass.ResourceVersion
+	log.Info("updating priorityClass on the host cluster")
+
+	if err := r.HostClient.Update(ctx, hostPriorityClass); err != nil {
+		return reconcile.Result{}, fmt.Errorf("updating priorityclass in host: %w", err)
 	}
 
 	return reconcile.Result{}, nil

@@ -3,7 +3,6 @@ package syncer
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -65,17 +64,7 @@ func (r *IngressReconciler) filterResources(object ctrlruntimeclient.Object) boo
 	// check for ingressConfig
 	syncConfig := cluster.Spec.Sync.Ingresses
 
-	// If syncing is disabled, only process deletions to allow for cleanup.
-	if !syncConfig.Enabled {
-		return object.GetDeletionTimestamp() != nil
-	}
-
-	labelSelector := labels.SelectorFromSet(syncConfig.Selector)
-	if labelSelector.Empty() {
-		return true
-	}
-
-	return labelSelector.Matches(labels.Set(object.GetLabels()))
+	return filterResource(object, syncConfig.Enabled, syncConfig.Selector, syncConfig.MatchExpressions)
 }
 
 // Reconcile creates, updates or deletes the host Ingress matching a virtual one.

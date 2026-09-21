@@ -13,83 +13,73 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	corev1 "k8s.io/api/core/v1"
+	schedulingv1 "k8s.io/api/scheduling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
 
-const (
-	testClusterName      = "my-cluster"
-	testClusterNamespace = "host-ns"
-	virtualNamespace     = "virtual-ns"
-)
-
-func TestConfigMapSyncerName(t *testing.T) {
-	syncer := &ConfigMapSyncer{}
-	assert.Equal(t, configMapControllerName, syncer.Name())
-}
-
-func TestConfigMapSyncerTranslateConfigMap(t *testing.T) {
-	syncer := &ConfigMapSyncer{
+func TestPriorityClassSyncerTranslatePriorityClass(t *testing.T) {
+	syncer := &PriorityClassSyncer{
 		Context: &Context{
 			Translator: translate.ToHostTranslator{
 				ClusterName:      testClusterName,
 				ClusterNamespace: testClusterNamespace,
 			},
 		}}
-	virtualConfigMap := newTestConfigMap("settings", map[string]string{"team": "platform"})
+	virtualPriorityClass := newTestPriorityClass("high", 1000, map[string]string{"environment": "production"})
 
-	hostConfigMap := syncer.translateConfigMap(virtualConfigMap)
+	hostPriorityClass := syncer.translatePriorityClass(*virtualPriorityClass)
 
-	assert.Equal(t, syncer.Translator.TranslateName(virtualNamespace, "settings"), hostConfigMap.Name)
-	assert.Equal(t, testClusterNamespace, hostConfigMap.Namespace)
-	assert.Equal(t, "value", hostConfigMap.Data["key"])
-	assert.Equal(t, "settings", hostConfigMap.Annotations[translate.ResourceNameAnnotation])
-	assert.Equal(t, virtualNamespace, hostConfigMap.Annotations[translate.ResourceNamespaceAnnotation])
-	assert.Equal(t, testClusterName, hostConfigMap.Labels[translate.ClusterNameLabel])
-	assert.Equal(t, "settings", virtualConfigMap.Name)
-	assert.Equal(t, virtualNamespace, virtualConfigMap.Namespace)
+	assert.Equal(t, syncer.Translator.TranslateName("", "high"), hostPriorityClass.Name)
+	assert.Equal(t, int32(1000), hostPriorityClass.Value)
+	assert.Equal(t, "high", hostPriorityClass.Annotations[translate.ResourceNameAnnotation])
+
+	assert.Contains(t, hostPriorityClass.Annotations, translate.ResourceNameAnnotation)
+	assert.Equal(t, testClusterName, hostPriorityClass.Labels[translate.ClusterNameLabel])
+	assert.Equal(t, "high", virtualPriorityClass.Name)
+	assert.Empty(t, virtualPriorityClass.Namespace)
 }
 
-func TestConfigMapSyncerFilterResources(t *testing.T) {
-	configMap := newTestConfigMap("settings", map[string]string{"environment": "production"})
+func TestPriorityClassSyncerFilterResources(t *testing.T) {
+	priorityClass := newTestPriorityClass("high", 1000, map[string]string{"environment": "production"})
 
 	tests := []struct {
 		name       string
-		syncConfig v1beta1.ConfigMapSyncConfig
-		object     client.Object
+		syncConfig v1beta1.PriorityClassSyncConfig
+		object     *schedulingv1.PriorityClass
 		filtered   bool
 	}{
 		{
 			name: "enabled with no selector",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.PriorityClassSyncConfig{
 				Enabled: true,
 			},
-			object:   configMap,
+			object:   priorityClass,
 			filtered: true,
 		},
 		{
 			name: "enabled matching selector",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.PriorityClassSyncConfig{
 				Enabled:  true,
 				Selector: map[string]string{"environment": "production"},
 			},
-			object:   configMap,
+			object:   priorityClass,
 			filtered: true,
 		},
 		{
 			name: "enabled non-matching selector",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.PriorityClassSyncConfig{
 				Enabled:  true,
 				Selector: map[string]string{"environment": "staging"},
 			},
-			object:   configMap,
+			object:   priorityClass,
 			filtered: false,
 		},
 		{
 			name: "enabled matching requirements",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.PriorityClassSyncConfig{
 				Enabled: true,
 				MatchExpressions: []metav1.LabelSelectorRequirement{
 					{
@@ -99,12 +89,12 @@ func TestConfigMapSyncerFilterResources(t *testing.T) {
 					},
 				},
 			},
-			object:   configMap,
+			object:   priorityClass,
 			filtered: true,
 		},
 		{
 			name: "enabled non-matching requirements",
-			syncConfig: v1beta1.ConfigMapSyncConfig{
+			syncConfig: v1beta1.PriorityClassSyncConfig{
 				Enabled: true,
 				MatchExpressions: []metav1.LabelSelectorRequirement{
 					{
@@ -114,20 +104,20 @@ func TestConfigMapSyncerFilterResources(t *testing.T) {
 					},
 				},
 			},
-			object:   configMap,
+			object:   priorityClass,
 			filtered: false,
 		},
 		{
 			name:       "disabled non-deletion",
-			syncConfig: v1beta1.ConfigMapSyncConfig{},
-			object:     configMap,
+			syncConfig: v1beta1.PriorityClassSyncConfig{},
+			object:     priorityClass,
 			filtered:   false,
 		},
 		{
 			name:       "disabled deletion",
-			syncConfig: v1beta1.ConfigMapSyncConfig{},
-			object: func() client.Object {
-				deleted := configMap.DeepCopy()
+			syncConfig: v1beta1.PriorityClassSyncConfig{},
+			object: func() *schedulingv1.PriorityClass {
+				deleted := priorityClass.DeepCopy()
 				deletionTime := metav1.NewTime(time.Now())
 				deleted.DeletionTimestamp = &deletionTime
 
@@ -139,64 +129,67 @@ func TestConfigMapSyncerFilterResources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			syncer := newConfigMapSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
-				c.Spec.Sync.ConfigMaps = tt.syncConfig
+			syncer := newPriorityClassSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
+				c.Spec.Sync.PriorityClasses = tt.syncConfig
 			}), nil)
 			assert.Equal(t, tt.filtered, syncer.filterResources(tt.object))
 		})
 	}
 }
 
-func TestConfigMapSyncerReconcile(t *testing.T) {
-	virtualObject := newTestConfigMap("settings", nil)
+func TestPriorityClassSyncerReconcile(t *testing.T) {
+	virtualObject := newTestPriorityClass("high-priority", 1000, map[string]string{"environment": "production"})
 	cluster := newTestCluster(func(c *v1beta1.Cluster) {
-		c.Spec.Sync.ConfigMaps = v1beta1.ConfigMapSyncConfig{Enabled: true}
+		c.Spec.Sync.PriorityClasses = v1beta1.PriorityClassSyncConfig{Enabled: true}
 	})
-	syncer := newConfigMapSyncer(t, cluster, []client.Object{virtualObject})
+	syncer := newPriorityClassSyncer(t, cluster, []client.Object{virtualObject})
 	request := reconcile.Request{NamespacedName: client.ObjectKeyFromObject(virtualObject)}
 
 	result, err := syncer.Reconcile(t.Context(), request)
 	require.NoError(t, err)
 	assert.Equal(t, reconcile.Result{}, result)
 
-	var gotVirtual corev1.ConfigMap
+	var gotVirtual schedulingv1.PriorityClass
 	require.NoError(t, syncer.VirtualClient.Get(t.Context(), request.NamespacedName, &gotVirtual))
-	assert.Contains(t, gotVirtual.Finalizers, configMapFinalizerName)
 
 	hostKey := syncer.Translator.NamespacedName(virtualObject)
 
-	var gotHost corev1.ConfigMap
+	var gotHost schedulingv1.PriorityClass
 	require.NoError(t, syncer.HostClient.Get(t.Context(), hostKey, &gotHost))
-	assert.Equal(t, virtualObject.Data, gotHost.Data)
+	assert.Equal(t, virtualObject.Value, gotHost.Value)
 	assert.Equal(t, cluster.UID, gotHost.OwnerReferences[0].UID)
 
-	gotVirtual.Data["key"] = "updated"
+	require.NoError(t, syncer.VirtualClient.Get(t.Context(), request.NamespacedName, &gotVirtual))
+	gotVirtual.Value = 2000
 	require.NoError(t, syncer.VirtualClient.Update(t.Context(), &gotVirtual))
+
 	_, err = syncer.Reconcile(t.Context(), request)
 	require.NoError(t, err)
+
 	require.NoError(t, syncer.HostClient.Get(t.Context(), hostKey, &gotHost))
-	assert.Equal(t, "updated", gotHost.Data["key"])
+	assert.Equal(t, int32(2000), gotHost.Value)
 }
 
-func TestConfigMapSyncerReconcileNotFound(t *testing.T) {
-	syncer := newConfigMapSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
-		c.Spec.Sync.ConfigMaps = v1beta1.ConfigMapSyncConfig{Enabled: true}
+func TestPriorityClassSyncerReconcileNotFound(t *testing.T) {
+	syncer := newPriorityClassSyncer(t, newTestCluster(func(c *v1beta1.Cluster) {
+		c.Spec.Sync.PriorityClasses = v1beta1.PriorityClassSyncConfig{Enabled: true}
 	}), nil)
 
 	_, err := syncer.Reconcile(t.Context(), reconcile.Request{NamespacedName: types.NamespacedName{Name: "missing", Namespace: virtualNamespace}})
 	require.NoError(t, err)
 }
 
-func newConfigMapSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects []client.Object, hostObjects ...client.Object) *ConfigMapSyncer {
+func newPriorityClassSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects []client.Object, hostObjects ...client.Object) *PriorityClassSyncer {
 	t.Helper()
 
 	scheme := runtime.NewScheme()
 	require.NoError(t, corev1.AddToScheme(scheme))
+	require.NoError(t, schedulingv1.AddToScheme(scheme))
 	require.NoError(t, v1beta1.AddToScheme(scheme))
 
 	hostObjects = append(hostObjects, cluster)
 
-	return &ConfigMapSyncer{
+	return &PriorityClassSyncer{
 		Context: &Context{
 			VirtualClient: fake.NewClientBuilder().WithScheme(scheme).WithObjects(virtualObjects...).Build(),
 			HostClient:    fake.NewClientBuilder().WithScheme(scheme).WithObjects(hostObjects...).Build(),
@@ -210,31 +203,12 @@ func newConfigMapSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjects [
 	}
 }
 
-func newTestCluster(opts ...func(*v1beta1.Cluster)) *v1beta1.Cluster {
-	c := &v1beta1.Cluster{
+func newTestPriorityClass(name string, value int32, labels map[string]string) *schedulingv1.PriorityClass {
+	return &schedulingv1.PriorityClass{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      testClusterName,
-			Namespace: testClusterNamespace,
-			UID:       types.UID("cluster-uid"),
+			Name:   name,
+			Labels: labels,
 		},
-		Spec: v1beta1.ClusterSpec{
-			Sync: &v1beta1.SyncConfig{},
-		},
-	}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-	return c
-}
-
-func newTestConfigMap(name string, labels map[string]string) *corev1.ConfigMap {
-	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: virtualNamespace,
-			Labels:    labels,
-		},
-		Data: map[string]string{"key": "value"},
+		Value: value,
 	}
 }

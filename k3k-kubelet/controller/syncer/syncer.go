@@ -4,6 +4,8 @@
 package syncer
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
@@ -17,4 +19,27 @@ type Context struct {
 	VirtualClient    client.Client
 	HostClient       client.Client
 	Translator       translate.ToHostTranslator
+}
+
+// filterResource determines whether a given Kubernetes object should be included based on the provided
+// enabled flag, label selector, and match expressions.
+//
+// It returns true if the object matches the criteria or if the selector is empty, and false otherwise.
+// If the resource is not enabled, it only returns true if the object has a deletion timestamp.
+func filterResource(object client.Object, enabled bool, selector map[string]string, matchExpressions []metav1.LabelSelectorRequirement) bool {
+	if !enabled {
+		return object.GetDeletionTimestamp() != nil
+	}
+
+	labelSelector := &metav1.LabelSelector{
+		MatchLabels:      selector,
+		MatchExpressions: matchExpressions,
+	}
+
+	parsedSelector, err := metav1.LabelSelectorAsSelector(labelSelector)
+	if err != nil {
+		return false
+	}
+
+	return parsedSelector.Empty() || parsedSelector.Matches(labels.Set(object.GetLabels()))
 }
