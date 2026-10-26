@@ -31,9 +31,7 @@ var _ = When("a cluster's status is tracked", Label(statusTestsLabel), func() {
 		ctx := context.Background()
 
 		vcp = &v1beta1.VirtualClusterPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "policy-",
-			},
+			GenerateName: "policy-",
 		}
 		Expect(k8sClient.Create(ctx, vcp)).To(Succeed())
 
@@ -60,10 +58,8 @@ var _ = When("a cluster's status is tracked", Label(statusTestsLabel), func() {
 			ctx := context.Background()
 
 			clusterObj := &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "status-cluster-",
-					Namespace:    namespace.Name,
-				},
+				GenerateName: "status-cluster-",
+				Namespace:    namespace.Name,
 			}
 			Expect(k8sClient.Create(ctx, clusterObj)).To(Succeed())
 
@@ -106,18 +102,14 @@ var _ = When("a cluster's status is tracked", Label(statusTestsLabel), func() {
 			ctx := context.Background()
 
 			priorityClass := &schedv1.PriorityClass{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "pc-",
-				},
-				Value: 100,
+				GenerateName: "pc-",
+				Value:        100,
 			}
 			Expect(k8sClient.Create(ctx, priorityClass)).To(Succeed())
 
 			clusterObj := &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "status-cluster-",
-					Namespace:    namespace.Name,
-				},
+				GenerateName: "status-cluster-",
+				Namespace:    namespace.Name,
 				Spec: v1beta1.ClusterSpec{
 					PriorityClass: priorityClass.Name,
 				},
@@ -167,10 +159,8 @@ var _ = When("a cluster's status is tracked", Label(statusTestsLabel), func() {
 			// update policy
 
 			priorityClassVCP := &schedv1.PriorityClass{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "pc-",
-				},
-				Value: 100,
+				GenerateName: "pc-",
+				Value:        100,
 			}
 			Expect(k8sClient.Create(ctx, priorityClassVCP)).To(Succeed())
 
@@ -205,10 +195,8 @@ var _ = When("a cluster's status is tracked", Label(statusTestsLabel), func() {
 			ctx := context.Background()
 
 			clusterObj := &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "cluster-",
-					Namespace:    namespace.Name,
-				},
+				GenerateName: "cluster-",
+				Namespace:    namespace.Name,
 				Spec: v1beta1.ClusterSpec{
 					Mode: v1beta1.VirtualClusterMode,
 				},

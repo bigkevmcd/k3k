@@ -9,7 +9,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -67,10 +66,8 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req reconcile.Request) (r
 		virtNamespace := pod.GetAnnotations()[translate.ResourceNamespaceAnnotation]
 
 		virtPod := corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      virtName,
-				Namespace: virtNamespace,
-			},
+			Name:      virtName,
+			Namespace: virtNamespace,
 		}
 
 		log.V(1).Info("Deleting Virtual Pod", "name", virtName, "namespace", virtNamespace)

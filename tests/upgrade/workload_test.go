@@ -37,10 +37,8 @@ func deployApp(ctx context.Context, client *kubernetes.Clientset) {
 	labels := map[string]string{"app": appName}
 
 	deployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      appName,
-			Namespace: appNamespace,
-		},
+		Name:      appName,
+		Namespace: appNamespace,
 		Spec: appsv1.DeploymentSpec{
 			Replicas: ptr.To[int32](appReplicas),
 			Selector: &metav1.LabelSelector{MatchLabels: labels},

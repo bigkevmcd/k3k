@@ -23,7 +23,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -255,16 +254,12 @@ func newCluster(name, namespace string, config *CreateConfig) (*v1beta1.Cluster,
 	}
 
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
-			Labels:      parseKeyValuePairs(config.labels, "label"),
-			Annotations: parseKeyValuePairs(config.annotations, "annotation"),
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Cluster",
-			APIVersion: "k3k.io/v1beta1",
-		},
+		Name:        name,
+		Namespace:   namespace,
+		Labels:      parseKeyValuePairs(config.labels, "label"),
+		Annotations: parseKeyValuePairs(config.annotations, "annotation"),
+		Kind:        "Cluster",
+		APIVersion:  "k3k.io/v1beta1",
 		Spec: v1beta1.ClusterSpec{
 			Servers:     new(int32(config.servers)),
 			Agents:      new(int32(config.agents)),
@@ -431,15 +426,11 @@ func CreateCustomCertsSecrets(ctx context.Context, name, namespace, customCertsP
 
 func caCertSecret(certName, clusterName, clusterNamespace string, cert, key []byte) *corev1.Secret {
 	return &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      controller.SafeConcatNameWithPrefix(clusterName, certName),
-			Namespace: clusterNamespace,
-		},
-		Type: corev1.SecretTypeTLS,
+		Kind:       "Secret",
+		APIVersion: "v1",
+		Name:       controller.SafeConcatNameWithPrefix(clusterName, certName),
+		Namespace:  clusterNamespace,
+		Type:       corev1.SecretTypeTLS,
 		Data: map[string][]byte{
 			corev1.TLSCertKey:       cert,
 			corev1.TLSPrivateKeyKey: key,

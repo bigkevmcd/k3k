@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
@@ -42,10 +41,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "init server with default (shared) cluster spec",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Status: v1beta1.ClusterStatus{
 					ClusterCIDR: defaultSharedClusterCIDR,
 					ServiceCIDR: defaultSharedServiceCIDR,
@@ -66,10 +63,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "non-init server with default (shared) cluster spec",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Status: v1beta1.ClusterStatus{
 					ClusterCIDR: defaultSharedClusterCIDR,
 					ServiceCIDR: defaultSharedServiceCIDR,
@@ -91,10 +86,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "explicit shared mode cluster",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Spec: v1beta1.ClusterSpec{
 					Mode: v1beta1.SharedClusterMode,
 				},
@@ -118,10 +111,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "init server with virtual mode cluster",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Spec: v1beta1.ClusterSpec{
 					Mode: v1beta1.VirtualClusterMode,
 				},
@@ -142,10 +133,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "non-init server with virtual mode cluster",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Spec: v1beta1.ClusterSpec{
 					Mode: v1beta1.VirtualClusterMode,
 				},
@@ -167,10 +156,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "init server with clusterDNS cluster spec",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Spec: v1beta1.ClusterSpec{
 					ClusterDNS: testClusterDNS,
 				},
@@ -195,10 +182,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "init server with custom TLSSANs merged and sorted",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Spec: v1beta1.ClusterSpec{
 					// intentionally unsorted and with a duplicate of serviceIP
 					TLSSANs: []string{"custom.example.com", testServiceIP},
@@ -229,10 +214,8 @@ func Test_buildServerConfig(t *testing.T) {
 		{
 			name: "init server with expose SANs merged and sorted",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testClusterName,
-					Namespace: testClusterNamespace,
-				},
+				Name:      testClusterName,
+				Namespace: testClusterNamespace,
 				Spec: v1beta1.ClusterSpec{
 					Mode:    v1beta1.VirtualClusterMode,
 					TLSSANs: []string{"10.0.0.1"},
@@ -287,10 +270,8 @@ func Test_buildServerConfig(t *testing.T) {
 
 func Test_buildServerConfig_TLSSANs(t *testing.T) {
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testClusterName,
-			Namespace: testClusterNamespace,
-		},
+		Name:      testClusterName,
+		Namespace: testClusterNamespace,
 		Spec: v1beta1.ClusterSpec{
 			Mode:    v1beta1.HCPClusterMode,
 			TLSSANs: []string{"custom.example.com"},
@@ -320,7 +301,7 @@ func Test_buildServerConfig_TLSSANs(t *testing.T) {
 
 func Test_setupStartCommand_MultipleServerArgs(t *testing.T) {
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{Name: testClusterName, Namespace: testClusterNamespace},
+		Name: testClusterName, Namespace: testClusterNamespace,
 		Spec: v1beta1.ClusterSpec{
 			Servers:    new(int32(1)),
 			ServerArgs: []string{"--tls-san=foo.example.com", "--kubelet-arg=cgroups-per-qos=false", "--kubelet-arg=enforce-node-allocatable="},

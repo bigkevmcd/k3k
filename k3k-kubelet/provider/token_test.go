@@ -106,11 +106,9 @@ func Test_removeKubeAccessVolume(t *testing.T) {
 				},
 				EphemeralContainers: []corev1.EphemeralContainer{
 					{
-						EphemeralContainerCommon: corev1.EphemeralContainerCommon{
-							Name: "debug",
-							VolumeMounts: []corev1.VolumeMount{
-								{Name: "kube-api-access-abc", MountPath: serviceAccountTokenMountPath},
-							},
+						Name: "debug",
+						VolumeMounts: []corev1.VolumeMount{
+							{Name: "kube-api-access-abc", MountPath: serviceAccountTokenMountPath},
 						},
 					},
 				},
@@ -179,9 +177,7 @@ func Test_addKubeAccessVolume(t *testing.T) {
 			},
 			EphemeralContainers: []corev1.EphemeralContainer{
 				{
-					EphemeralContainerCommon: corev1.EphemeralContainerCommon{
-						Name: "debug",
-					},
+					Name: "debug",
 				},
 			},
 		},

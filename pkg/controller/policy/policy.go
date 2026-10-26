@@ -21,7 +21,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -78,7 +77,7 @@ func namespaceEventHandler() handler.Funcs {
 			}
 
 			if ns.Labels[PolicyNameLabelKey] != "" {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: ns.Labels[PolicyNameLabelKey]}})
+				q.Add(reconcile.Request{Name: ns.Labels[PolicyNameLabelKey]})
 			}
 		},
 		// When a Namespace is updated, if it has the "policy.k3k.io/policy-name" label
@@ -105,18 +104,18 @@ func namespaceEventHandler() handler.Funcs {
 
 			// The VCP has not changed, but we enqueue a reconciliation because the PSA or other labels have changed
 			if oldVCPName == newVCPName {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: oldVCPName}})
+				q.Add(reconcile.Request{Name: oldVCPName})
 				return
 			}
 
 			// Enqueue the old VCP name for cleanup
 			if oldVCPName != "" {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: oldVCPName}})
+				q.Add(reconcile.Request{Name: oldVCPName})
 			}
 
 			// Enqueue the new VCP name
 			if newVCPName != "" {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: newVCPName}})
+				q.Add(reconcile.Request{Name: newVCPName})
 			}
 		},
 		// When a namespace is deleted all the resources in the namespace are deleted
@@ -128,7 +127,7 @@ func namespaceEventHandler() handler.Funcs {
 			}
 
 			if ns.Labels[PolicyNameLabelKey] != "" {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: ns.Labels[PolicyNameLabelKey]}})
+				q.Add(reconcile.Request{Name: ns.Labels[PolicyNameLabelKey]})
 			}
 		},
 	}
@@ -145,7 +144,7 @@ func nodeEventHandler(r *VirtualClusterPolicyReconciler) handler.Funcs {
 		}
 
 		for _, vcp := range vcpList.Items {
-			q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: vcp.Name}})
+			q.Add(reconcile.Request{Name: vcp.Name})
 		}
 	}
 
@@ -215,7 +214,7 @@ func clusterEventHandler(r *VirtualClusterPolicyReconciler) handler.Funcs {
 			}
 
 			if ns.Labels[PolicyNameLabelKey] != "" {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: ns.Labels[PolicyNameLabelKey]}})
+				q.Add(reconcile.Request{Name: ns.Labels[PolicyNameLabelKey]})
 			}
 		},
 		// When a Cluster is updated, if its Namespace has the "policy.k3k.io/policy-name" label
@@ -248,7 +247,7 @@ func clusterEventHandler(r *VirtualClusterPolicyReconciler) handler.Funcs {
 			}
 
 			if !reflect.DeepEqual(clusterSubSpecOld, clusterSubSpecNew) {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: ns.Labels[PolicyNameLabelKey]}})
+				q.Add(reconcile.Request{Name: ns.Labels[PolicyNameLabelKey]})
 			}
 		},
 		// When a Cluster is deleted -> nothing to do
@@ -394,17 +393,13 @@ func (c *VirtualClusterPolicyReconciler) reconcileQuota(ctx context.Context, nam
 
 	// create/update resource Quota
 	resourceQuota := &corev1.ResourceQuota{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "ResourceQuota",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      k3kcontroller.SafeConcatNameWithPrefix(policy.Name),
-			Namespace: namespace,
-			Labels: map[string]string{
-				ManagedByLabelKey:  VirtualPolicyControllerName,
-				PolicyNameLabelKey: policy.Name,
-			},
+		Kind:       "ResourceQuota",
+		APIVersion: "v1",
+		Name:       k3kcontroller.SafeConcatNameWithPrefix(policy.Name),
+		Namespace:  namespace,
+		Labels: map[string]string{
+			ManagedByLabelKey:  VirtualPolicyControllerName,
+			PolicyNameLabelKey: policy.Name,
 		},
 		Spec: *policy.Spec.Quota,
 	}
@@ -448,17 +443,13 @@ func (c *VirtualClusterPolicyReconciler) reconcileLimit(ctx context.Context, nam
 	}
 
 	limitRange := &corev1.LimitRange{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "LimitRange",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      k3kcontroller.SafeConcatNameWithPrefix(policy.Name),
-			Namespace: namespace,
-			Labels: map[string]string{
-				ManagedByLabelKey:  VirtualPolicyControllerName,
-				PolicyNameLabelKey: policy.Name,
-			},
+		Kind:       "LimitRange",
+		APIVersion: "v1",
+		Name:       k3kcontroller.SafeConcatNameWithPrefix(policy.Name),
+		Namespace:  namespace,
+		Labels: map[string]string{
+			ManagedByLabelKey:  VirtualPolicyControllerName,
+			PolicyNameLabelKey: policy.Name,
 		},
 		Spec: *policy.Spec.Limit,
 	}

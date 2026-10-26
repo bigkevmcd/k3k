@@ -35,10 +35,8 @@ var _ = When("a shared mode cluster is created", Ordered, Label(syncTestsLabel),
 			ctx := GinkgoT().Context()
 
 			virtualConfigMap = &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-cm",
-					Namespace: "default",
-				},
+				Name:      "test-cm",
+				Namespace: "default",
 			}
 
 			var err error
@@ -69,10 +67,8 @@ var _ = When("a shared mode cluster is created", Ordered, Label(syncTestsLabel),
 			ctx := GinkgoT().Context()
 
 			virtualService = &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-svc",
-					Namespace: "default",
-				},
+				Name:      "test-svc",
+				Namespace: "default",
 				Spec: corev1.ServiceSpec{
 					Type:  corev1.ServiceTypeClusterIP,
 					Ports: []corev1.ServicePort{{Port: 8888}},

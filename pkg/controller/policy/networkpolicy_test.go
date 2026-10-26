@@ -18,7 +18,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/controller/policy"
 )
@@ -27,8 +26,8 @@ func TestFindPodCIDRs_ClusterCIDROverride(t *testing.T) {
 	// a Node with a different PodCIDR is present, but the explicit override must win and
 	// the Node must not even be consulted
 	node := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
-		Spec:       corev1.NodeSpec{PodCIDR: "10.244.0.0/24"},
+		Name: "node-1",
+		Spec: corev1.NodeSpec{PodCIDR: "10.244.0.0/24"},
 	}
 
 	cl := createFakeClient(t, node)
@@ -40,8 +39,8 @@ func TestFindPodCIDRs_ClusterCIDROverride(t *testing.T) {
 
 func TestFindPodCIDRs_FromNodePodCIDR(t *testing.T) {
 	node := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
-		Spec:       corev1.NodeSpec{PodCIDR: "192.168.77.0/24"},
+		Name: "node-1",
+		Spec: corev1.NodeSpec{PodCIDR: "192.168.77.0/24"},
 	}
 
 	cl := createFakeClient(t, node)
@@ -53,8 +52,8 @@ func TestFindPodCIDRs_FromNodePodCIDR(t *testing.T) {
 
 func TestFindPodCIDRs_FromNodePodCIDRs(t *testing.T) {
 	node := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
-		Spec:       corev1.NodeSpec{PodCIDRs: []string{"192.168.77.0/24", "fd00:1::/64"}},
+		Name: "node-1",
+		Spec: corev1.NodeSpec{PodCIDRs: []string{"192.168.77.0/24", "fd00:1::/64"}},
 	}
 
 	cl := createFakeClient(t, node)
@@ -66,12 +65,12 @@ func TestFindPodCIDRs_FromNodePodCIDRs(t *testing.T) {
 
 func TestFindPodCIDRs_MultipleNodes(t *testing.T) {
 	node1 := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
-		Spec:       corev1.NodeSpec{PodCIDR: "192.168.77.0/24"},
+		Name: "node-1",
+		Spec: corev1.NodeSpec{PodCIDR: "192.168.77.0/24"},
 	}
 	node2 := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: "node-2"},
-		Spec:       corev1.NodeSpec{PodCIDR: "192.168.78.0/24"},
+		Name: "node-2",
+		Spec: corev1.NodeSpec{PodCIDR: "192.168.78.0/24"},
 	}
 
 	cl := createFakeClient(t, node1, node2)
@@ -85,7 +84,7 @@ func TestFindPodCIDRs_CannotDetermine(t *testing.T) {
 	// no --cluster-cidr override, and the Node carries no PodCIDR at all (e.g. Cilium with
 	// cluster-pool IPAM) -- must fail open (empty list) rather than error
 	node := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+		Name: "node-1",
 	}
 
 	cl := createFakeClient(t, node)

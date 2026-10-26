@@ -26,9 +26,7 @@ var _ = When("a cluster with private registry configuration is used", Ordered, L
 		ctx := context.Background()
 
 		vcp := &v1beta1.VirtualClusterPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "policy-",
-			},
+			GenerateName: "policy-",
 			Spec: v1beta1.VirtualClusterPolicySpec{
 				AllowedMode:          v1beta1.VirtualClusterMode,
 				DisableNetworkPolicy: true,
@@ -60,18 +58,14 @@ var _ = When("a cluster with private registry configuration is used", Ordered, L
 		// Using subPath allows mounting individual files while keeping parent directories writable
 		cluster.Spec.SecretMounts = []v1beta1.SecretMount{
 			{
-				SecretVolumeSource: corev1.SecretVolumeSource{
-					SecretName: "k3s-registry-config",
-				},
-				MountPath: "/etc/rancher/k3s/registries.yaml",
-				SubPath:   "registries.yaml",
+				SecretName: "k3s-registry-config",
+				MountPath:  "/etc/rancher/k3s/registries.yaml",
+				SubPath:    "registries.yaml",
 			},
 			{
-				SecretVolumeSource: corev1.SecretVolumeSource{
-					SecretName: "private-registry-ca-cert",
-				},
-				MountPath: "/etc/rancher/k3s/tls/ca.crt",
-				SubPath:   "tls.crt",
+				SecretName: "private-registry-ca-cert",
+				MountPath:  "/etc/rancher/k3s/tls/ca.crt",
+				SubPath:    "tls.crt",
 			},
 		}
 
@@ -127,10 +121,8 @@ var _ = When("a cluster with private registry configuration is used", Ordered, L
 		// creating a pod with image that uses any registry other than docker.io should fail
 		// for example public.ecr.aws/docker/library/alpine:latest
 		alpinePod := &corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "alpine-",
-				Namespace:    "default",
-			},
+			GenerateName: "alpine-",
+			Namespace:    "default",
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{{
 					Name:  "alpine",

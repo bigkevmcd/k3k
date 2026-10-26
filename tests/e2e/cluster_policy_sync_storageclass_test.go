@@ -32,11 +32,9 @@ var _ = When("a shared mode cluster is created in a namespace with a policy", Or
 
 		// 1. Create StorageClasses in host
 		storageClassEnabled := &storagev1.StorageClass{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "sc-policy-enabled-",
-				Labels: map[string]string{
-					cluster.SyncEnabledLabelKey: "true",
-				},
+			GenerateName: "sc-policy-enabled-",
+			Labels: map[string]string{
+				cluster.SyncEnabledLabelKey: "true",
 			},
 			Provisioner: "my-provisioner",
 		}
@@ -47,11 +45,9 @@ var _ = When("a shared mode cluster is created in a namespace with a policy", Or
 		Expect(err).To(Not(HaveOccurred()))
 
 		storageClassDisabled := &storagev1.StorageClass{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "sc-policy-disabled-",
-				Labels: map[string]string{
-					cluster.SyncEnabledLabelKey: "false",
-				},
+			GenerateName: "sc-policy-disabled-",
+			Labels: map[string]string{
+				cluster.SyncEnabledLabelKey: "false",
 			},
 			Provisioner: "my-provisioner",
 		}
@@ -61,9 +57,7 @@ var _ = When("a shared mode cluster is created in a namespace with a policy", Or
 
 		// 2. Create VirtualClusterPolicy with StorageClass sync enabled
 		vcp = &v1beta1.VirtualClusterPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "vcp-sync-sc-",
-			},
+			GenerateName: "vcp-sync-sc-",
 			Spec: v1beta1.VirtualClusterPolicySpec{
 				Sync: &v1beta1.SyncConfig{
 					StorageClasses: v1beta1.StorageClassSyncConfig{
@@ -77,11 +71,9 @@ var _ = When("a shared mode cluster is created in a namespace with a policy", Or
 
 		// 3. Create Namespace with policy label
 		ns := &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ns-vcp-",
-				Labels: map[string]string{
-					policy.PolicyNameLabelKey: vcp.Name,
-				},
+			GenerateName: "ns-vcp-",
+			Labels: map[string]string{
+				policy.PolicyNameLabelKey: vcp.Name,
 			},
 		}
 		// We use the k8s clientset for namespace creation to stay consistent with other tests

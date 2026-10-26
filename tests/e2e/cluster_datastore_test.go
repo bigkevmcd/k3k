@@ -7,7 +7,6 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 	fwk3k "github.com/rancher/k3k/tests/framework/k3k"
@@ -107,10 +106,8 @@ var _ = When("creating a shared mode cluster with postgres datastore via drop-in
 
 		configSecretName := "datastore-config-secret"
 		configSecret := corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      configSecretName,
-				Namespace: namespace.Name,
-			},
+			Name:      configSecretName,
+			Namespace: namespace.Name,
 			Data: map[string][]byte{
 				"config.yaml": fmt.Appendf(nil, "datastore-endpoint: %q\ncluster-init: false\n", dsn.String()),
 			},
@@ -122,11 +119,9 @@ var _ = When("creating a shared mode cluster with postgres datastore via drop-in
 		cluster := NewCluster(namespace.Name, func(c *v1beta1.Cluster) {
 			c.Spec.SecretMounts = []v1beta1.SecretMount{
 				{
-					Name: "external-datastore-init-config",
-					SecretVolumeSource: corev1.SecretVolumeSource{
-						SecretName: configSecretName,
-					},
-					MountPath: "/opt/rancher/k3s/init/config.yaml.d/",
+					Name:       "external-datastore-init-config",
+					SecretName: configSecretName,
+					MountPath:  "/opt/rancher/k3s/init/config.yaml.d/",
 				},
 			}
 		})
@@ -262,10 +257,8 @@ var _ = When("creating a virtual mode cluster with postgres datastore via drop-i
 
 		configSecretName := "datastore-config-secret"
 		configSecret := corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      configSecretName,
-				Namespace: namespace.Name,
-			},
+			Name:      configSecretName,
+			Namespace: namespace.Name,
 			Data: map[string][]byte{
 				"config.yaml": fmt.Appendf(nil, "datastore-endpoint: %q\ncluster-init: false\n", dsn.String()),
 			},
@@ -278,11 +271,9 @@ var _ = When("creating a virtual mode cluster with postgres datastore via drop-i
 			c.Spec.Mode = v1beta1.VirtualClusterMode
 			c.Spec.SecretMounts = []v1beta1.SecretMount{
 				{
-					Name: "external-datastore-init-config",
-					SecretVolumeSource: corev1.SecretVolumeSource{
-						SecretName: configSecretName,
-					},
-					MountPath: "/opt/rancher/k3s/init/config.yaml.d/",
+					Name:       "external-datastore-init-config",
+					SecretName: configSecretName,
+					MountPath:  "/opt/rancher/k3s/init/config.yaml.d/",
 				},
 			}
 		})

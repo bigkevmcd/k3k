@@ -48,10 +48,8 @@ func runCmd(cmdName string, args ...string) (string, string, error) {
 // any of the defaults.
 func NewCluster(namespace string, opts ...func(*v1beta1.Cluster)) *v1beta1.Cluster {
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "cluster-",
-			Namespace:    namespace,
-		},
+		GenerateName: "cluster-",
+		Namespace:    namespace,
 		Spec: v1beta1.ClusterSpec{
 			TLSSANs: []string{hostIP},
 			Expose: &v1beta1.ExposeConfig{

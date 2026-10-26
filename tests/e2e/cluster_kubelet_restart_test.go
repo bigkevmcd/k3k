@@ -43,10 +43,8 @@ var _ = Context("In a shared cluster", Label(kubeletTestsLabel), Label(slowTests
 			ctx := context.Background()
 
 			p := &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-				},
+				GenerateName: "nginx-",
+				Namespace:    "default",
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:  "nginx",
@@ -217,10 +215,8 @@ var _ = Context("In a shared cluster", Label(kubeletTestsLabel), Label(slowTests
 			replicas := int32(nodeCount)
 
 			deployment := &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "dangling-test",
-					Namespace: "default",
-				},
+				Name:      "dangling-test",
+				Namespace: "default",
 				Spec: appsv1.DeploymentSpec{
 					Replicas: &replicas,
 					Selector: &metav1.LabelSelector{

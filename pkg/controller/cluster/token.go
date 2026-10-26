@@ -13,7 +13,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -98,14 +97,10 @@ func random(size int) (string, error) {
 // TokenSecretObj returns the Secret holding a cluster's server token.
 func TokenSecretObj(token, name, namespace string) corev1.Secret {
 	return corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Secret",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      TokenSecretName(name),
-			Namespace: namespace,
-		},
+		APIVersion: "v1",
+		Kind:       "Secret",
+		Name:       TokenSecretName(name),
+		Namespace:  namespace,
 		Data: map[string][]byte{
 			"token": []byte(token),
 		},

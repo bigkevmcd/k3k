@@ -39,9 +39,7 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 
 		It("should fail for a non-existing mode", func() {
 			policy := &v1beta1.VirtualClusterPolicy{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "policy-",
-				},
+				GenerateName: "policy-",
 				Spec: v1beta1.VirtualClusterPolicySpec{
 					AllowedMode: v1beta1.ClusterMode("non-existing"),
 				},
@@ -56,9 +54,7 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 
 			BeforeEach(func() {
 				namespace = &corev1.Namespace{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "ns-",
-					},
+					GenerateName: "ns-",
 				}
 
 				err := k8sClient.Create(ctx, namespace)
@@ -333,10 +329,8 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 				bindPolicyToNamespace(namespace, policy)
 
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace.Name,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace.Name,
 					Spec: v1beta1.ClusterSpec{
 						Mode:    v1beta1.SharedClusterMode,
 						Servers: new(int32(1)),
@@ -369,10 +363,8 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 				bindPolicyToNamespace(namespace, policy)
 
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace.Name,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace.Name,
 					Spec: v1beta1.ClusterSpec{
 						Mode:    v1beta1.SharedClusterMode,
 						Servers: new(int32(1)),
@@ -405,10 +397,8 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 				bindPolicyToNamespace(namespace, policy)
 
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace.Name,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace.Name,
 					Spec: v1beta1.ClusterSpec{
 						Mode:         v1beta1.SharedClusterMode,
 						Servers:      new(int32(1)),
@@ -493,10 +483,8 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 				bindPolicyToNamespace(namespace, policy)
 
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace.Name,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace.Name,
 					Spec: v1beta1.ClusterSpec{
 						Mode:    v1beta1.SharedClusterMode,
 						Servers: new(int32(1)),
@@ -549,10 +537,8 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 				clusterServerAffinity := serverAffinity.DeepCopy()
 				clusterServerAffinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight = 40
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace.Name,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace.Name,
 					Spec: v1beta1.ClusterSpec{
 						Mode:           v1beta1.SharedClusterMode,
 						Servers:        new(int32(1)),
@@ -720,10 +706,8 @@ var _ = Describe("VirtualClusterPolicy Controller", Label("controller"), Label("
 
 				// Create a cluster in the namespace
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace.Name,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace.Name,
 					Spec: v1beta1.ClusterSpec{
 						Mode:    v1beta1.SharedClusterMode,
 						Servers: new(int32(1)),
@@ -866,10 +850,8 @@ func newPolicy(spec v1beta1.VirtualClusterPolicySpec) *v1beta1.VirtualClusterPol
 	GinkgoHelper()
 
 	policy := &v1beta1.VirtualClusterPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "policy-",
-		},
-		Spec: spec,
+		GenerateName: "policy-",
+		Spec:         spec,
 	}
 
 	err := k8sClient.Create(ctx, policy)

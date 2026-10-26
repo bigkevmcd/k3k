@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	logrustest "github.com/sirupsen/logrus/hooks/test"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
@@ -44,7 +43,7 @@ func Test_standalonePath(t *testing.T) {
 	}
 
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "k3k-foo"},
+		Name: "foo", Namespace: "k3k-foo",
 	}
 
 	for _, tt := range tests {

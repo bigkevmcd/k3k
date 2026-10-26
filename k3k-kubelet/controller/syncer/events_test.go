@@ -14,7 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 )
@@ -25,27 +24,23 @@ func TestEventSyncerReconcile(t *testing.T) {
 
 	hostPod := func(name, namespace, virtualName, virtualNamespace string) *corev1.Pod {
 		return &corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-				Annotations: map[string]string{
-					translate.ResourceNameAnnotation:      virtualName,
-					translate.ResourceNamespaceAnnotation: virtualNamespace,
-				},
-				UID:             types.UID("pod-host-uid"),
-				ResourceVersion: "1",
+			Name:      name,
+			Namespace: namespace,
+			Annotations: map[string]string{
+				translate.ResourceNameAnnotation:      virtualName,
+				translate.ResourceNamespaceAnnotation: virtualNamespace,
 			},
+			UID:             types.UID("pod-host-uid"),
+			ResourceVersion: "1",
 		}
 	}
 
 	virtualPod := func(name, namespace string) *corev1.Pod {
 		return &corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            name,
-				Namespace:       namespace,
-				UID:             types.UID("pod-virtual-uid"),
-				ResourceVersion: "1",
-			},
+			Name:            name,
+			Namespace:       namespace,
+			UID:             types.UID("pod-virtual-uid"),
+			ResourceVersion: "1",
 		}
 	}
 
@@ -59,10 +54,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 	}{
 		"normal event is re-emitted via virtEventRecorder": {
 			receivedEvent: &corev1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "nginx-test-mycluster-6e67696e782b746573742b6d79636c7573746572.18b194827e6b49da",
-					Namespace: "k3k-mycluster",
-				},
+				Name:      "nginx-test-mycluster-6e67696e782b746573742b6d79636c7573746572.18b194827e6b49da",
+				Namespace: "k3k-mycluster",
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -84,10 +77,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 		},
 		"warning event is re-emitted via virtEventRecorder": {
 			receivedEvent: &corev1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-event-warning",
-					Namespace: "host-ns",
-				},
+				Name:      "test-event-warning",
+				Namespace: "host-ns",
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -109,10 +100,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 		},
 		"event with empty type and reason is still forwarded": {
 			receivedEvent: &corev1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-event-empty",
-					Namespace: "host-ns",
-				},
+				Name:      "test-event-empty",
+				Namespace: "host-ns",
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -134,10 +123,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 		},
 		"message containing host namespace/name is translated to virtual name/namespace": {
 			receivedEvent: &corev1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "nginx-test-mycluster-6e67696e782b746573742b6d79636c7573746572.18b194827e6b49da",
-					Namespace: "k3k-mycluster",
-				},
+				Name:      "nginx-test-mycluster-6e67696e782b746573742b6d79636c7573746572.18b194827e6b49da",
+				Namespace: "k3k-mycluster",
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -159,10 +146,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 		},
 		"non-Pod InvolvedObject kind skips reconciliation": {
 			receivedEvent: &corev1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-event-non-pod",
-					Namespace: "k3k-mycluster",
-				},
+				Name:      "test-event-non-pod",
+				Namespace: "k3k-mycluster",
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "v1",
 					Kind:       "ConfigMap",
@@ -178,10 +163,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 		},
 		"non-reversible translated name skips event emission": {
 			receivedEvent: &corev1.Event{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-event-non-reversible",
-					Namespace: "k3k-mycluster",
-				},
+				Name:      "test-event-non-reversible",
+				Namespace: "k3k-mycluster",
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -237,10 +220,8 @@ func TestEventSyncerReconcile(t *testing.T) {
 			}
 
 			result, err := syncer.Reconcile(context.Background(), reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      tt.receivedEvent.Name,
-					Namespace: tt.receivedEvent.Namespace,
-				},
+				Name:      tt.receivedEvent.Name,
+				Namespace: tt.receivedEvent.Namespace,
 			})
 
 			require.NoError(t, err)
@@ -291,10 +272,8 @@ func TestEventSyncerReconcileNotFound(t *testing.T) {
 	}
 
 	result, err := syncer.Reconcile(context.Background(), reconcile.Request{
-		NamespacedName: types.NamespacedName{
-			Name:      "non-existent-event",
-			Namespace: "host-ns",
-		},
+		Name:      "non-existent-event",
+		Namespace: "host-ns",
 	})
 
 	require.NoError(t, err)

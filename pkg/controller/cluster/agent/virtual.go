@@ -83,14 +83,10 @@ func (v *VirtualAgent) config(ctx context.Context) error {
 	}
 
 	configSecret := &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      configSecretName(v.cluster.Name),
-			Namespace: v.cluster.Namespace,
-		},
+		Kind:       "Secret",
+		APIVersion: "v1",
+		Name:       configSecretName(v.cluster.Name),
+		Namespace:  v.cluster.Namespace,
 		Data: map[string][]byte{
 			"config.yaml": config,
 		},
@@ -132,15 +128,11 @@ func (v *VirtualAgent) deployment(ctx context.Context) error {
 	}
 
 	deployment := &appsv1.Deployment{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Deployment",
-			APIVersion: "apps/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      v.Name(),
-			Namespace: v.cluster.Namespace,
-			Labels:    selector.MatchLabels,
-		},
+		Kind:       "Deployment",
+		APIVersion: "apps/v1",
+		Name:       v.Name(),
+		Namespace:  v.cluster.Namespace,
+		Labels:     selector.MatchLabels,
 		Spec: appsv1.DeploymentSpec{
 			Replicas: v.cluster.Spec.Agents,
 			Selector: &selector,
@@ -188,53 +180,39 @@ func (v *VirtualAgent) podSpec(ctx context.Context, image, name string) corev1.P
 		Volumes: []corev1.Volume{
 			{
 				Name: "config",
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
-						SecretName: configSecretName(v.cluster.Name),
-						Items: []corev1.KeyToPath{
-							{
-								Key:  "config.yaml",
-								Path: "config.yaml",
-							},
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: configSecretName(v.cluster.Name),
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "config.yaml",
+							Path: "config.yaml",
 						},
 					},
 				},
 			},
 			{
-				Name: "run",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "run",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varrun",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varrun",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlibcni",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlibcni",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlog",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlog",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlibkubelet",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlibkubelet",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlibrancherk3s",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlibrancherk3s",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 		Containers: []corev1.Container{

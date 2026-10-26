@@ -53,10 +53,8 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 			ctx := context.Background()
 
 			pod = &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-				},
+				GenerateName: "nginx-",
+				Namespace:    "default",
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:  "nginx",
@@ -102,10 +100,8 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 			ctx := context.Background()
 
 			pod = &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-				},
+				GenerateName: "nginx-",
+				Namespace:    "default",
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:  "nginx",
@@ -161,15 +157,13 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 
 		BeforeEach(func() {
 			p := &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-					Labels: map[string]string{
-						"name": "var-expansion-test",
-					},
-					Annotations: map[string]string{
-						"notmysubpath": "mypath",
-					},
+				GenerateName: "nginx-",
+				Namespace:    "default",
+				Labels: map[string]string{
+					"name": "var-expansion-test",
+				},
+				Annotations: map[string]string{
+					"notmysubpath": "mypath",
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -208,8 +202,8 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 						},
 					},
 					Volumes: []corev1.Volume{{
-						Name:         "workdir",
-						VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}},
+						Name:     "workdir",
+						EmptyDir: &corev1.EmptyDirVolumeSource{},
 					}},
 				},
 			}
@@ -352,10 +346,8 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 
 		BeforeEach(func(ctx context.Context) {
 			p := &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-				},
+				GenerateName: "nginx-",
+				Namespace:    "default",
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:  "nginx",
@@ -426,10 +418,8 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 			var err error
 
 			p := &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-				},
+				GenerateName: "nginx-",
+				Namespace:    "default",
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
@@ -570,19 +560,15 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 			var err error
 
 			serviceaccount := &corev1.ServiceAccount{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      serviceAccountName,
-					Namespace: "default",
-				},
+				Name:      serviceAccountName,
+				Namespace: "default",
 			}
 			serviceaccount, err = virtualCluster.Client.CoreV1().ServiceAccounts(serviceaccount.Namespace).Create(ctx, serviceaccount, metav1.CreateOptions{})
 			Expect(err).To(Not(HaveOccurred()))
 
 			pod = &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    "default",
-				},
+				GenerateName: "nginx-",
+				Namespace:    "default",
 				Spec: corev1.PodSpec{
 					AutomountServiceAccountToken: new(false),
 					Containers: []corev1.Container{{
@@ -599,15 +585,13 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 					Volumes: []corev1.Volume{
 						{
 							Name: "projected-serviceaccount-token-vol",
-							VolumeSource: corev1.VolumeSource{
-								Projected: &corev1.ProjectedVolumeSource{
-									Sources: []corev1.VolumeProjection{
-										{
-											ServiceAccountToken: &corev1.ServiceAccountTokenProjection{
-												Audience:          serviceAccountTokenAudience,
-												ExpirationSeconds: new(serviceAccountTokenExp),
-												Path:              serviceAccountTokenPath,
-											},
+							Projected: &corev1.ProjectedVolumeSource{
+								Sources: []corev1.VolumeProjection{
+									{
+										ServiceAccountToken: &corev1.ServiceAccountTokenProjection{
+											Audience:          serviceAccountTokenAudience,
+											ExpirationSeconds: new(serviceAccountTokenExp),
+											Path:              serviceAccountTokenPath,
 										},
 									},
 								},
@@ -629,10 +613,8 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 				// name of the secret holding it has to be rebuilt the same way the provider does
 				virtualSecretName := controller.SafeConcatNameWithPrefix([]string{serviceAccountName, serviceAccountTokenSanitizedAudience, strconv.FormatInt(serviceAccountTokenExp, 10), serviceAccountTokenPath}...)
 				hostSecret := &corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      virtualSecretName,
-						Namespace: pod.Namespace,
-					},
+					Name:      virtualSecretName,
+					Namespace: pod.Namespace,
 				}
 				translator.TranslateTo(hostSecret)
 
@@ -664,18 +646,14 @@ var _ = Context("In a shared cluster", Label(podTestsLabel), Ordered, func() {
 
 			// create a new namespace for each virtual pod
 			ns, err := virtualCluster.Client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "custom-scheduler-",
-				},
+				GenerateName: "custom-scheduler-",
 			}, metav1.CreateOptions{})
 			Expect(err).To(Not(HaveOccurred()))
 
 			p := &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "nginx-",
-					Namespace:    ns.Name,
-					Annotations:  annotations,
-				},
+				GenerateName: "nginx-",
+				Namespace:    ns.Name,
+				Annotations:  annotations,
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:  "nginx",

@@ -36,9 +36,7 @@ func buildSecretMountVolume(secretMount v1beta1.SecretMount) (corev1.Volume, cor
 	projectedVolSources := []corev1.VolumeProjection{
 		{
 			Secret: &corev1.SecretProjection{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: secretMount.SecretName,
-				},
+				Name:     secretMount.SecretName,
 				Items:    secretMount.Items,
 				Optional: secretMount.Optional,
 			},
@@ -52,10 +50,8 @@ func buildSecretMountVolume(secretMount v1beta1.SecretMount) (corev1.Volume, cor
 
 	vol := corev1.Volume{
 		Name: volName,
-		VolumeSource: corev1.VolumeSource{
-			Projected: &corev1.ProjectedVolumeSource{
-				Sources: projectedVolSources,
-			},
+		Projected: &corev1.ProjectedVolumeSource{
+			Sources: projectedVolSources,
 		},
 	}
 
@@ -102,10 +98,8 @@ func FilterEmptyDirVolumes(podSpec *corev1.PodSpec) {
 func AddKmsgMount(podSpec *corev1.PodSpec) {
 	podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 		Name: "dev-kmsg",
-		VolumeSource: corev1.VolumeSource{
-			HostPath: &corev1.HostPathVolumeSource{
-				Path: "/dev/kmsg",
-			},
+		HostPath: &corev1.HostPathVolumeSource{
+			Path: "/dev/kmsg",
 		},
 	})
 

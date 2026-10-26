@@ -28,11 +28,9 @@ var _ = When("a shared mode cluster is created", Ordered, Label(syncTestsLabel),
 		virtualCluster = NewVirtualCluster()
 
 		storageClassEnabled := &storagev1.StorageClass{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "sc-",
-				Labels: map[string]string{
-					cluster.SyncEnabledLabelKey: "true",
-				},
+			GenerateName: "sc-",
+			Labels: map[string]string{
+				cluster.SyncEnabledLabelKey: "true",
 			},
 			Provisioner: "my-provisioner",
 		}
@@ -41,11 +39,9 @@ var _ = When("a shared mode cluster is created", Ordered, Label(syncTestsLabel),
 		Expect(err).To(Not(HaveOccurred()))
 
 		storageClassDisabled := &storagev1.StorageClass{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "sc-",
-				Labels: map[string]string{
-					cluster.SyncEnabledLabelKey: "false",
-				},
+			GenerateName: "sc-",
+			Labels: map[string]string{
+				cluster.SyncEnabledLabelKey: "false",
 			},
 			Provisioner: "my-provisioner",
 		}
@@ -83,10 +79,8 @@ var _ = When("a shared mode cluster is created", Ordered, Label(syncTestsLabel),
 
 	It("can create storage classes in the virtual cluster", func() {
 		storageClass := &storagev1.StorageClass{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "sc-",
-			},
-			Provisioner: "my-provisioner",
+			GenerateName: "sc-",
+			Provisioner:  "my-provisioner",
 		}
 
 		storageClass, err := virtualCluster.Client.StorageV1().StorageClasses().Create(ctx, storageClass, metav1.CreateOptions{})

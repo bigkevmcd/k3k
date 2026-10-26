@@ -115,9 +115,7 @@ func (p *Provider) transformProjectedTokens(ctx context.Context, virtualPod, hos
 			// replace the projected token volume with a projected secret
 			hostPod.Spec.Volumes[i].Projected.Sources[j].ServiceAccountToken = nil
 			hostPod.Spec.Volumes[i].Projected.Sources[j].Secret = &corev1.SecretProjection{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: hostSecret.Name,
-				},
+				Name: hostSecret.Name,
 			}
 		}
 	}
@@ -135,10 +133,8 @@ func (p *Provider) requestTokenSecret(ctx context.Context, token *corev1.Service
 	}
 
 	tokenRequest := &authv1.TokenRequest{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceAccountName,
-			Namespace: namespace,
-		},
+		Name:      serviceAccountName,
+		Namespace: namespace,
 		Spec: authv1.TokenRequestSpec{
 			Audiences:         audiences,
 			ExpirationSeconds: token.ExpirationSeconds,
@@ -158,11 +154,9 @@ func (p *Provider) requestTokenSecret(ctx context.Context, token *corev1.Service
 
 	// create a virtual secret with that token
 	virtualSecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			// creating unique name for the virtual secret based on the request attributes
-			Name:      generateTokenSecretName(serviceAccountName, token.Path, tokenResp),
-			Namespace: namespace,
-		},
+		// creating unique name for the virtual secret based on the request attributes
+		Name:      generateTokenSecretName(serviceAccountName, token.Path, tokenResp),
+		Namespace: namespace,
 		Data: map[string][]byte{
 			token.Path: []byte(tokenResp.Status.Token),
 		},
@@ -173,16 +167,12 @@ func (p *Provider) requestTokenSecret(ctx context.Context, token *corev1.Service
 
 func virtualSecret(name, namespace, serviceAccountName string) *corev1.Secret {
 	return &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Annotations: map[string]string{
-				corev1.ServiceAccountNameKey: serviceAccountName,
-			},
+		Kind:       "Secret",
+		APIVersion: "v1",
+		Name:       name,
+		Namespace:  namespace,
+		Annotations: map[string]string{
+			corev1.ServiceAccountNameKey: serviceAccountName,
 		},
 		Type: corev1.SecretTypeServiceAccountToken,
 	}
@@ -258,10 +248,8 @@ func addKubeAccessVolume(pod *corev1.Pod, hostSecretName string) {
 
 	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
 		Name: tokenVolumeName,
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: hostSecretName,
-			},
+		Secret: &corev1.SecretVolumeSource{
+			SecretName: hostSecretName,
 		},
 	})
 

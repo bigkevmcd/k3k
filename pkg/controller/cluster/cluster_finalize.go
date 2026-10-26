@@ -51,14 +51,10 @@ func (c *Reconciler) finalizeCluster(ctx context.Context, cluster *v1beta1.Clust
 
 	// delete API server lease
 	lease := &coordinationv1.Lease{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Lease",
-			APIVersion: "coordination.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cluster.Name,
-			Namespace: cluster.Namespace,
-		},
+		Kind:       "Lease",
+		APIVersion: "coordination.k8s.io/v1",
+		Name:       cluster.Name,
+		Namespace:  cluster.Namespace,
 	}
 	if err := c.Client.Delete(ctx, lease); err != nil && !apierrors.IsNotFound(err) {
 		return reconcile.Result{}, err

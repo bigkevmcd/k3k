@@ -10,7 +10,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/k3k-kubelet/controller/syncer"
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -29,7 +28,7 @@ var ServiceTests = func() {
 		ctx := context.Background()
 
 		ns := corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "ns-"},
+			GenerateName: "ns-",
 		}
 		err := hostTestEnv.k8sClient.Create(ctx, &ns)
 		Expect(err).NotTo(HaveOccurred())
@@ -37,10 +36,8 @@ var ServiceTests = func() {
 		namespace = ns.Name
 
 		cluster = v1beta1.Cluster{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "cluster-",
-				Namespace:    namespace,
-			},
+			GenerateName: "cluster-",
+			Namespace:    namespace,
 		}
 		err = hostTestEnv.k8sClient.Create(ctx, &cluster)
 		Expect(err).NotTo(HaveOccurred())
@@ -50,7 +47,7 @@ var ServiceTests = func() {
 	})
 
 	AfterEach(func() {
-		ns := corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+		ns := corev1.Namespace{Name: namespace}
 		err := hostTestEnv.k8sClient.Delete(context.Background(), &ns)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -59,12 +56,10 @@ var ServiceTests = func() {
 		ctx := context.Background()
 
 		service := &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "service-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "service-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: corev1.ServiceSpec{
 				Type: corev1.ServiceTypeNodePort,
@@ -108,12 +103,10 @@ var ServiceTests = func() {
 		ctx := context.Background()
 
 		service := &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "service-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "service-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: corev1.ServiceSpec{
 				Type: corev1.ServiceTypeNodePort,
@@ -177,10 +170,8 @@ var ServiceTests = func() {
 		ctx := context.Background()
 
 		service := &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "service-",
-				Namespace:    "default",
-			},
+			GenerateName: "service-",
+			Namespace:    "default",
 			Spec: corev1.ServiceSpec{
 				Type: corev1.ServiceTypeNodePort,
 				Ports: []corev1.ServicePort{
@@ -238,10 +229,8 @@ var ServiceTests = func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		service := &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "service-",
-				Namespace:    "default",
-			},
+			GenerateName: "service-",
+			Namespace:    "default",
 			Spec: corev1.ServiceSpec{
 				Type: corev1.ServiceTypeNodePort,
 				Ports: []corev1.ServicePort{

@@ -254,10 +254,8 @@ func runLoggingPod(ctx context.Context, virtualCluster *VirtualCluster) (*corev1
 	marker := fmt.Sprintf("hello-from-the-worker-%d", time.Now().UnixNano())
 
 	loggingPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "logger-",
-			Namespace:    metav1.NamespaceDefault,
-		},
+		GenerateName: "logger-",
+		Namespace:    metav1.NamespaceDefault,
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
 				Name:    "logger",

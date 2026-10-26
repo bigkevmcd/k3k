@@ -13,7 +13,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -214,20 +213,16 @@ func newPersistentVolume(obj *corev1.PersistentVolumeClaim) *corev1.PersistentVo
 	}
 
 	return &corev1.PersistentVolume{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: obj.Name,
-			Labels: map[string]string{
-				pseudoPVLabel: "true",
-			},
-			Annotations: map[string]string{
-				volume.AnnBoundByController:      "true",
-				volume.AnnDynamicallyProvisioned: "k3k-kubelet",
-			},
+		Name: obj.Name,
+		Labels: map[string]string{
+			pseudoPVLabel: "true",
 		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "PersistentVolume",
-			APIVersion: "v1",
+		Annotations: map[string]string{
+			volume.AnnBoundByController:      "true",
+			volume.AnnDynamicallyProvisioned: "k3k-kubelet",
 		},
+		Kind:       "PersistentVolume",
+		APIVersion: "v1",
 		Spec: corev1.PersistentVolumeSpec{
 			PersistentVolumeSource: corev1.PersistentVolumeSource{
 				FlexVolume: &corev1.FlexPersistentVolumeSource{

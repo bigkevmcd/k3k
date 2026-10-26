@@ -71,10 +71,8 @@ func (c *Reconciler) ensureHCPKubernetesEndpointSlice(ctx context.Context, clust
 	}
 
 	endpointSlice := &discoveryv1.EndpointSlice{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kubernetes",
-			Namespace: metav1.NamespaceDefault,
-		},
+		Name:      "kubernetes",
+		Namespace: metav1.NamespaceDefault,
 	}
 
 	_, err = controllerutil.CreateOrUpdate(ctx, virtClient, endpointSlice, func() error {
@@ -275,10 +273,8 @@ func (c *Reconciler) ensureHCPKubernetesEndpoints(ctx context.Context, cluster *
 	//nolint:staticcheck // SA1019 corev1.Endpoints is deprecated in v1.33+, but needed in the Conformance tests
 	// We are already using the discoveryv1.EndpointSlice
 	endpoints := &corev1.Endpoints{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kubernetes",
-			Namespace: metav1.NamespaceDefault,
-		},
+		Name:      "kubernetes",
+		Namespace: metav1.NamespaceDefault,
 	}
 
 	//nolint:staticcheck // SA1019 corev1.EndpointAddress is deprecated in v1.33+, but needed in the Conformance tests

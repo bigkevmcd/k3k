@@ -124,21 +124,19 @@ func Add(ctx context.Context, mgr manager.Manager, config *Config, maxConcurrent
 
 	// initialize a new Reconciler
 	reconciler := Reconciler{
-		DiscoveryClient: discoveryClient,
-		Client:          mgr.GetClient(),
-		RestCfg:         mgr.GetConfig(),
-		EventRecorder:   mgr.GetEventRecorder(clusterController),
-		PortAllocator:   portAllocator,
-		Config: Config{
-			SharedAgentImage:            config.SharedAgentImage,
-			SharedAgentImagePullPolicy:  config.SharedAgentImagePullPolicy,
-			VirtualAgentImage:           config.VirtualAgentImage,
-			VirtualAgentImagePullPolicy: config.VirtualAgentImagePullPolicy,
-			K3SServerImage:              config.K3SServerImage,
-			K3SServerImagePullPolicy:    config.K3SServerImagePullPolicy,
-			ServerImagePullSecrets:      config.ServerImagePullSecrets,
-			AgentImagePullSecrets:       config.AgentImagePullSecrets,
-		},
+		DiscoveryClient:             discoveryClient,
+		Client:                      mgr.GetClient(),
+		RestCfg:                     mgr.GetConfig(),
+		EventRecorder:               mgr.GetEventRecorder(clusterController),
+		PortAllocator:               portAllocator,
+		SharedAgentImage:            config.SharedAgentImage,
+		SharedAgentImagePullPolicy:  config.SharedAgentImagePullPolicy,
+		VirtualAgentImage:           config.VirtualAgentImage,
+		VirtualAgentImagePullPolicy: config.VirtualAgentImagePullPolicy,
+		K3SServerImage:              config.K3SServerImage,
+		K3SServerImagePullPolicy:    config.K3SServerImagePullPolicy,
+		ServerImagePullSecrets:      config.ServerImagePullSecrets,
+		AgentImagePullSecrets:       config.AgentImagePullSecrets,
 	}
 
 	// index the 'spec.sync.storageClasses.enabled' field
@@ -538,10 +536,8 @@ func (c *Reconciler) ensureKubeconfigSecret(ctx context.Context, cluster *v1beta
 	}
 
 	kubeconfigSecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      controller.SafeConcatNameWithPrefix(cluster.Name, "kubeconfig"),
-			Namespace: cluster.Namespace,
-		},
+		Name:      controller.SafeConcatNameWithPrefix(cluster.Name, "kubeconfig"),
+		Namespace: cluster.Namespace,
 	}
 
 	_, err = controllerutil.CreateOrUpdate(ctx, c.Client, kubeconfigSecret, func() error {
@@ -621,10 +617,8 @@ func (c *Reconciler) ensureNetworkPolicy(ctx context.Context, cluster *v1beta1.C
 	// network policies are managed by the Policy -> delete the one created as a standalone cluster
 	if cluster.Status.PolicyName != "" {
 		netpol := &networkingv1.NetworkPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      networkPolicyName,
-				Namespace: cluster.Namespace,
-			},
+			Name:      networkPolicyName,
+			Namespace: cluster.Namespace,
 		}
 
 		return client.IgnoreNotFound(c.Client.Delete(ctx, netpol))
@@ -636,14 +630,10 @@ func (c *Reconciler) ensureNetworkPolicy(ctx context.Context, cluster *v1beta1.C
 	}
 
 	expectedNetworkPolicy := &networkingv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      controller.SafeConcatNameWithPrefix(cluster.Name),
-			Namespace: cluster.Namespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "NetworkPolicy",
-			APIVersion: "networking.k8s.io/v1",
-		},
+		Name:       controller.SafeConcatNameWithPrefix(cluster.Name),
+		Namespace:  cluster.Namespace,
+		Kind:       "NetworkPolicy",
+		APIVersion: "networking.k8s.io/v1",
 		Spec: networkingv1.NetworkPolicySpec{
 			// Isolate synced workload pods
 			PodSelector: metav1.LabelSelector{
@@ -1062,8 +1052,8 @@ func (c *Reconciler) lookupServiceCIDR(ctx context.Context) (string, error) {
 	log.V(1).Info("Looking up Service CIDR from a failing service creation")
 
 	failingSvc := corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: "fail", Namespace: "default"},
-		Spec:       corev1.ServiceSpec{ClusterIP: "1.1.1.1"},
+		Name: "fail", Namespace: "default",
+		Spec: corev1.ServiceSpec{ClusterIP: "1.1.1.1"},
 	}
 
 	if err := c.Client.Create(ctx, &failingSvc); err != nil {
@@ -1106,8 +1096,8 @@ func (c *Reconciler) lookupServiceCIDR(ctx context.Context) (string, error) {
 		apiServerArgs := apiServerPod.Spec.Containers[0].Args
 
 		for _, arg := range apiServerArgs {
-			if strings.HasPrefix(arg, "--service-cluster-ip-range=") {
-				serviceCIDR := strings.TrimPrefix(arg, "--service-cluster-ip-range=")
+			if after, ok := strings.CutPrefix(arg, "--service-cluster-ip-range="); ok {
+				serviceCIDR := after
 				log.V(1).Info("Found Service CIDR from kube-apiserver pod: " + serviceCIDR)
 
 				// validate serviceCIDR

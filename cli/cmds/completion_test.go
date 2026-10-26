@@ -9,7 +9,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -29,15 +28,15 @@ func completionTestScheme(t *testing.T) *runtime.Scheme {
 }
 
 func namespace(name string) *corev1.Namespace {
-	return &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: name}}
+	return &corev1.Namespace{Name: name}
 }
 
 func cluster(name, ns string) *v1beta1.Cluster {
-	return &v1beta1.Cluster{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns}}
+	return &v1beta1.Cluster{Name: name, Namespace: ns}
 }
 
 func virtualClusterPolicy(name string) *v1beta1.VirtualClusterPolicy {
-	return &v1beta1.VirtualClusterPolicy{ObjectMeta: metav1.ObjectMeta{Name: name}}
+	return &v1beta1.VirtualClusterPolicy{Name: name}
 }
 
 func Test_completeNamespaces(t *testing.T) {

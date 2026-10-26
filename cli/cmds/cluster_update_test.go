@@ -9,8 +9,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
 
@@ -25,38 +23,38 @@ func TestUpdateCluster(t *testing.T) {
 		{
 			name:    "bare name defaults to k3k-<name>",
 			arg:     "foo",
-			cluster: &v1beta1.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "k3k-foo"}},
+			cluster: &v1beta1.Cluster{Name: "foo", Namespace: "k3k-foo"},
 		},
 		{
 			name:          "bare name respects the namespace flag",
 			flagNamespace: "myns",
 			arg:           "foo",
-			cluster:       &v1beta1.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "myns"}},
+			cluster:       &v1beta1.Cluster{Name: "foo", Namespace: "myns"},
 		},
 		{
 			name:    "namespace/name form is split",
 			arg:     "myns/foo",
-			cluster: &v1beta1.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "myns"}},
+			cluster: &v1beta1.Cluster{Name: "foo", Namespace: "myns"},
 		},
 		{
 			name: "servers can be set when only agents are defined",
 			arg:  "myns/foo",
 			cluster: &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "myns"},
-				Spec:       v1beta1.ClusterSpec{Agents: new(int32(1))},
+				Name: "foo", Namespace: "myns",
+				Spec: v1beta1.ClusterSpec{Agents: new(int32(1))},
 			},
 		},
 		{
 			name:          "namespace/name conflicting with the flag errors",
 			flagNamespace: "bar",
 			arg:           "myns/foo",
-			cluster:       &v1beta1.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "myns"}},
+			cluster:       &v1beta1.Cluster{Name: "foo", Namespace: "myns"},
 			wantErr:       `namespace mismatch: flag --namespace "bar" conflicts with argument namespace "myns"`,
 		},
 		{
 			name:    "missing cluster",
 			arg:     "missing",
-			cluster: &v1beta1.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "k3k-foo"}},
+			cluster: &v1beta1.Cluster{Name: "foo", Namespace: "k3k-foo"},
 			wantErr: "cluster missing not found in namespace k3k-missing",
 		},
 	}

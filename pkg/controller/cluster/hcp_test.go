@@ -241,7 +241,7 @@ func Test_hcpEndpointAddresses(t *testing.T) {
 	}
 
 	nodePortService := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: server.ServiceName("test-cluster"), Namespace: "test-ns"},
+		Name: server.ServiceName("test-cluster"), Namespace: "test-ns",
 		Spec: corev1.ServiceSpec{
 			Type:      corev1.ServiceTypeNodePort,
 			ClusterIP: "10.43.0.10",
@@ -250,7 +250,7 @@ func Test_hcpEndpointAddresses(t *testing.T) {
 	}
 
 	loadBalancerService := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: server.ServiceName("test-cluster"), Namespace: "test-ns"},
+		Name: server.ServiceName("test-cluster"), Namespace: "test-ns",
 		Spec: corev1.ServiceSpec{
 			Type:      corev1.ServiceTypeLoadBalancer,
 			ClusterIP: "10.43.0.10",
@@ -326,14 +326,14 @@ func newTestClient(t *testing.T, objs ...client.Object) client.Client {
 
 func newTestHCPCluster(name string) *v1beta1.Cluster {
 	return &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "test-ns"},
-		Spec:       v1beta1.ClusterSpec{Mode: v1beta1.HCPClusterMode},
+		Name: name, Namespace: "test-ns",
+		Spec: v1beta1.ClusterSpec{Mode: v1beta1.HCPClusterMode},
 	}
 }
 
 func newTestNode(name string, labels map[string]string, internalIPs ...string) *corev1.Node {
 	node := &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{Name: name, Labels: labels},
+		Name: name, Labels: labels,
 		Status: corev1.NodeStatus{
 			// the external and hostname addresses are never used
 			Addresses: []corev1.NodeAddress{
@@ -352,13 +352,11 @@ func newTestNode(name string, labels map[string]string, internalIPs ...string) *
 
 func newTestServerPod(clusterName, name, nodeName string) *corev1.Pod {
 	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterName + "-" + name,
-			Namespace: "test-ns",
-			Labels: map[string]string{
-				"cluster": clusterName,
-				"role":    "server",
-			},
+		Name:      clusterName + "-" + name,
+		Namespace: "test-ns",
+		Labels: map[string]string{
+			"cluster": clusterName,
+			"role":    "server",
 		},
 		Spec: corev1.PodSpec{NodeName: nodeName},
 	}

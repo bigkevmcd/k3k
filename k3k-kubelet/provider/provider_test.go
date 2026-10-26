@@ -12,7 +12,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/k3k-kubelet/translate"
 )
@@ -81,10 +80,8 @@ func Test_mergeEnvVars(t *testing.T) {
 
 func Test_configureEnv(t *testing.T) {
 	virtualPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-pod",
-			Namespace: "my-namespace",
-		},
+		Name:      "my-pod",
+		Namespace: "my-namespace",
 	}
 
 	tests := []struct {
@@ -175,8 +172,8 @@ func Test_configureEnv(t *testing.T) {
 					Name: "SECRET_VAR",
 					ValueFrom: &corev1.EnvVarSource{
 						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{Name: "my-secret"},
-							Key:                  "my-key",
+							Name: "my-secret",
+							Key:  "my-key",
 						},
 					},
 				},
@@ -186,8 +183,8 @@ func Test_configureEnv(t *testing.T) {
 					Name: "SECRET_VAR",
 					ValueFrom: &corev1.EnvVarSource{
 						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{Name: "my-secret-my-namespace-c-test-6d792d7365637265742b6d792d6-887db"},
-							Key:                  "my-key",
+							Name: "my-secret-my-namespace-c-test-6d792d7365637265742b6d792d6-887db",
+							Key:  "my-key",
 						},
 					},
 				},
@@ -201,8 +198,8 @@ func Test_configureEnv(t *testing.T) {
 					Name: "CONFIG_VAR",
 					ValueFrom: &corev1.EnvVarSource{
 						ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{Name: "my-configmap"},
-							Key:                  "my-key",
+							Name: "my-configmap",
+							Key:  "my-key",
 						},
 					},
 				},
@@ -212,8 +209,8 @@ func Test_configureEnv(t *testing.T) {
 					Name: "CONFIG_VAR",
 					ValueFrom: &corev1.EnvVarSource{
 						ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{Name: "my-configmap-my-namespace-c-test-6d792d636f6e6669676d6170-301f6"},
-							Key:                  "my-key",
+							Name: "my-configmap-my-namespace-c-test-6d792d636f6e6669676d6170-301f6",
+							Key:  "my-key",
 						},
 					},
 				},
@@ -322,17 +319,15 @@ func TestGetPods_ScopedToAgent(t *testing.T) {
 	// plus the AgentNameLabel recording which agent synced them.
 	newHostPod := func(name, agent, namespace string) *corev1.Pod {
 		return &corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-				Labels: map[string]string{
-					translate.ClusterNameLabel: clusterName,
-					translate.AgentNameLabel:   agent,
-				},
-				Annotations: map[string]string{
-					translate.ResourceNameAnnotation:      name,
-					translate.ResourceNamespaceAnnotation: "default",
-				},
+			Name:      name,
+			Namespace: namespace,
+			Labels: map[string]string{
+				translate.ClusterNameLabel: clusterName,
+				translate.AgentNameLabel:   agent,
+			},
+			Annotations: map[string]string{
+				translate.ResourceNameAnnotation:      name,
+				translate.ResourceNamespaceAnnotation: "default",
 			},
 		}
 	}
@@ -375,27 +370,23 @@ func TestGetPods_ScopedToAgent(t *testing.T) {
 
 func TestUpdateMetadata(t *testing.T) {
 	hostPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "host-pod",
-			Namespace: "ns-test",
-			Labels: map[string]string{
-				translate.ClusterNameLabel: "c-test",
-				translate.AgentNameLabel:   "node-a",
-				"app":                      "nginx",
-			},
-			Annotations: map[string]string{
-				translate.ResourceNameAnnotation:      "my-pod",
-				translate.ResourceNamespaceAnnotation: "default",
-			},
+		Name:      "host-pod",
+		Namespace: "ns-test",
+		Labels: map[string]string{
+			translate.ClusterNameLabel: "c-test",
+			translate.AgentNameLabel:   "node-a",
+			"app":                      "nginx",
+		},
+		Annotations: map[string]string{
+			translate.ResourceNameAnnotation:      "my-pod",
+			translate.ResourceNamespaceAnnotation: "default",
 		},
 	}
 
 	virtualPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-pod",
-			Namespace: "default",
-			Labels:    map[string]string{"app": "nginx"},
-		},
+		Name:      "my-pod",
+		Namespace: "default",
+		Labels:    map[string]string{"app": "nginx"},
 	}
 
 	updateMetadata(hostPod, virtualPod)

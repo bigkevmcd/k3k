@@ -53,10 +53,8 @@ var _ = Context("In a shared cluster", Label(appTestsLabel), Ordered, func() {
 			By("Creating the PVC")
 
 			pvc = &corev1.PersistentVolumeClaim{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "k3k-test-app-",
-					Namespace:    namespace,
-				},
+				GenerateName: "k3k-test-app-",
+				Namespace:    namespace,
 				Spec: corev1.PersistentVolumeClaimSpec{
 					AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 					Resources: corev1.VolumeResourceRequirements{
@@ -78,10 +76,8 @@ var _ = Context("In a shared cluster", Label(appTestsLabel), Ordered, func() {
 			By("Creating the Deployment")
 
 			deployment = &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "k3k-test-app-",
-					Namespace:    namespace,
-				},
+				GenerateName: "k3k-test-app-",
+				Namespace:    namespace,
 				Spec: appsv1.DeploymentSpec{
 					Replicas: new(int32(3)),
 					Selector: &metav1.LabelSelector{
@@ -104,10 +100,8 @@ var _ = Context("In a shared cluster", Label(appTestsLabel), Ordered, func() {
 							},
 							Volumes: []corev1.Volume{{
 								Name: "data-volume",
-								VolumeSource: corev1.VolumeSource{
-									PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-										ClaimName: pvc.Name,
-									},
+								PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+									ClaimName: pvc.Name,
 								},
 							}},
 						},
@@ -216,10 +210,8 @@ var _ = Context("In a shared cluster", Label(appTestsLabel), Ordered, func() {
 			}
 
 			statefulSet = &appsv1.StatefulSet{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "k3k-sts-test-app-",
-					Namespace:    namespace,
-				},
+				GenerateName: "k3k-sts-test-app-",
+				Namespace:    namespace,
 				Spec: appsv1.StatefulSetSpec{
 					Replicas: new(int32(3)),
 					Selector: &metav1.LabelSelector{
@@ -243,10 +235,8 @@ var _ = Context("In a shared cluster", Label(appTestsLabel), Ordered, func() {
 						},
 					},
 					VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:   "www",
-							Labels: labels,
-						},
+						Name:   "www",
+						Labels: labels,
 						Spec: corev1.PersistentVolumeClaimSpec{
 							AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 							Resources: corev1.VolumeResourceRequirements{

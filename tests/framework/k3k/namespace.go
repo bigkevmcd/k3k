@@ -24,11 +24,9 @@ func CreateNamespace(clientset kubernetes.Interface) *corev1.Namespace {
 	GinkgoHelper()
 
 	namespace := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "ns-",
-			Labels: map[string]string{
-				"e2e": "true",
-			},
+		GenerateName: "ns-",
+		Labels: map[string]string{
+			"e2e": "true",
 		},
 	}
 

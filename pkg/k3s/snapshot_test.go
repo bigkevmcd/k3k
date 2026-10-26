@@ -12,7 +12,6 @@ import (
 
 	k3sv1 "github.com/k3s-io/api/k3s.cattle.io/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
@@ -30,9 +29,7 @@ type testCase[T any] struct {
 
 func Test_SaveSnapshot(t *testing.T) {
 	snapshot := &v1beta1.EtcdSnapshot{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test-snapshot",
-		},
+		Name: "test-snapshot",
 		Spec: v1beta1.EtcdSnapshotSpec{
 			ClusterRef: corev1.LocalObjectReference{Name: "test-cluster"},
 			Compress:   true,
@@ -91,9 +88,7 @@ func Test_SaveSnapshot(t *testing.T) {
 
 func Test_DeleteSnapshot(t *testing.T) {
 	snapshot := &v1beta1.EtcdSnapshot{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test-snapshot",
-		},
+		Name: "test-snapshot",
 		Spec: v1beta1.EtcdSnapshotSpec{
 			ClusterRef: corev1.LocalObjectReference{Name: "test-cluster"},
 			Compress:   true,
@@ -174,19 +169,13 @@ func Test_ListSnapshots(t *testing.T) {
 			serverStatus:    http.StatusOK,
 			serverResponse:  `{"kind":"list","apiversion":"v1","items":[{"kind":"etcdsnapshotfile","apiversion":"k3s.cattle.io/v1","metadata":{"name":"test-snapshot"},"spec":{"snapshotName":"test-snapshot","location":"file:///var/lib/rancher/k3s/server/db/snapshots/test-snapshot"}}]}`,
 			expectedResult: &k3sv1.ETCDSnapshotFileList{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: "v1",
-					Kind:       "list",
-				},
+				APIVersion: "v1",
+				Kind:       "list",
 				Items: []k3sv1.ETCDSnapshotFile{
 					{
-						TypeMeta: metav1.TypeMeta{
-							Kind:       "etcdsnapshotfile",
-							APIVersion: "k3s.cattle.io/v1",
-						},
-						ObjectMeta: metav1.ObjectMeta{
-							Name: "test-snapshot",
-						},
+						Kind:       "etcdsnapshotfile",
+						APIVersion: "k3s.cattle.io/v1",
+						Name:       "test-snapshot",
 						Spec: k3sv1.ETCDSnapshotSpec{
 							SnapshotName: "test-snapshot",
 							Location:     "file:///var/lib/rancher/k3s/server/db/snapshots/test-snapshot",

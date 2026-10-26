@@ -10,7 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
@@ -25,14 +24,12 @@ func baseSharedAgentPodSpec(sharedAgent SharedAgent) corev1.PodSpec {
 		Volumes: []corev1.Volume{
 			{
 				Name: "config",
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
-						SecretName: configSecretName(sharedAgent.cluster.Name),
-						Items: []corev1.KeyToPath{
-							{
-								Key:  "config.yaml",
-								Path: "config.yaml",
-							},
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: configSecretName(sharedAgent.cluster.Name),
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "config.yaml",
+							Path: "config.yaml",
 						},
 					},
 				},
@@ -44,12 +41,10 @@ func baseSharedAgentPodSpec(sharedAgent SharedAgent) corev1.PodSpec {
 				Image:           sharedAgent.image,
 				ImagePullPolicy: corev1.PullPolicy(sharedAgent.imagePullPolicy),
 				ReadinessProbe: &corev1.Probe{
-					ProbeHandler: corev1.ProbeHandler{
-						HTTPGet: &corev1.HTTPGetAction{
-							Scheme: corev1.URISchemeHTTPS,
-							Path:   "/readyz",
-							Port:   intstr.FromInt(sharedAgent.kubeletPort),
-						},
+					HTTPGet: &corev1.HTTPGetAction{
+						Scheme: corev1.URISchemeHTTPS,
+						Path:   "/readyz",
+						Port:   intstr.FromInt(sharedAgent.kubeletPort),
 					},
 					InitialDelaySeconds: 60,
 					FailureThreshold:    5,
@@ -121,15 +116,11 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						TypeMeta: metav1.TypeMeta{
-							Kind:       "Cluster",
-							APIVersion: "k3k.io/v1beta",
-						},
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-default",
-							Namespace: "shared-test",
-						},
-						Spec: v1beta1.ClusterSpec{},
+						Kind:       "Cluster",
+						APIVersion: "k3k.io/v1beta",
+						Name:       "sc-default",
+						Namespace:  "shared-test",
+						Spec:       v1beta1.ClusterSpec{},
 					},
 				},
 				image:       "rancher/k3k-kubelet:latest",
@@ -144,10 +135,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-mirror",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-mirror",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							MirrorHostNodes: true,
 						},
@@ -169,10 +158,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-image",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-image",
+						Namespace: "shared-test",
 					},
 				},
 				image:           "rancher/k3k-kubelet:v1.2.3",
@@ -192,10 +179,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-nodeselector",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-nodeselector",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							NodeSelector: map[string]string{
 								"disktype":             "ssd",
@@ -222,10 +207,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-nodeselector-policy",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-nodeselector-policy",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							NodeSelector: map[string]string{"spec-key": "spec-value"},
 						},
@@ -251,10 +234,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-nodeselector-policy-empty",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-nodeselector-policy-empty",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							NodeSelector: map[string]string{"spec-key": "spec-value"},
 						},
@@ -278,10 +259,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-agentenvs",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-agentenvs",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentEnvs: []corev1.EnvVar{
 								{Name: "CUSTOM_VAR", Value: "custom-value"},
@@ -308,10 +287,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-affinity-spec",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-affinity-spec",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentAffinity: nodeAffinity("kubernetes.io/os", corev1.NodeSelectorOpIn, "linux"),
 						},
@@ -332,10 +309,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-affinity-policy",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-affinity-policy",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentAffinity: nodeAffinity("spec-key", corev1.NodeSelectorOpIn, "spec-value"),
 						},
@@ -361,10 +336,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-pullsecrets",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-pullsecrets",
+						Namespace: "shared-test",
 					},
 				},
 				image:            "rancher/k3k-kubelet:latest",
@@ -386,10 +359,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-secctx-spec",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-secctx-spec",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: new(true),
@@ -414,10 +385,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-secctx-policy",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-secctx-policy",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: new(true),
@@ -451,10 +420,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-runtime-spec",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-runtime-spec",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							RuntimeClassName: new("kata"),
 						},
@@ -475,10 +442,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-runtime-policy",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-runtime-policy",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							RuntimeClassName: new("kata"),
 						},
@@ -504,10 +469,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-hostusers-spec",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-hostusers-spec",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							HostUsers: new(false),
 						},
@@ -528,10 +491,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-hostusers-policy",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-hostusers-policy",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							HostUsers: new(true),
 						},
@@ -557,10 +518,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-workerlimit",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-workerlimit",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							WorkerLimit: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("500m"),
@@ -589,10 +548,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-workerResources",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-workerResources",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							WorkerResources: &corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
@@ -631,10 +588,8 @@ func Test_sharedAgentPodSpec(t *testing.T) {
 			sharedAgent: SharedAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-workerResources",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-workerResources",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							WorkerLimit: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("100m"),
@@ -701,10 +656,8 @@ func Test_sharedAgentData(t *testing.T) {
 			name: "simple config",
 			args: args{
 				cluster: &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "mycluster",
-						Namespace: "ns-1",
-					},
+					Name:      "mycluster",
+					Namespace: "ns-1",
 					Spec: v1beta1.ClusterSpec{
 						Version: "v1.2.3",
 					},
@@ -729,10 +682,8 @@ func Test_sharedAgentData(t *testing.T) {
 			name: "version in status",
 			args: args{
 				cluster: &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "mycluster",
-						Namespace: "ns-1",
-					},
+					Name:      "mycluster",
+					Namespace: "ns-1",
 					Spec: v1beta1.ClusterSpec{
 						Version: "v1.2.3",
 					},
@@ -760,10 +711,8 @@ func Test_sharedAgentData(t *testing.T) {
 			name: "missing version in spec",
 			args: args{
 				cluster: &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "mycluster",
-						Namespace: "ns-1",
-					},
+					Name:      "mycluster",
+					Namespace: "ns-1",
 					Status: v1beta1.ClusterStatus{
 						HostVersion: "v1.3.3",
 					},

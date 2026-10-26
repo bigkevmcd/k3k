@@ -104,10 +104,8 @@ func NewVirtualClusters(n int) []*VirtualCluster {
 
 func NewCluster(namespace string, opts ...func(*v1beta1.Cluster)) *v1beta1.Cluster {
 	c := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "cluster-",
-			Namespace:    namespace,
-		},
+		GenerateName: "cluster-",
+		Namespace:    namespace,
 		Spec: v1beta1.ClusterSpec{
 			TLSSANs: []string{hostIP},
 			Expose: &v1beta1.ExposeConfig{
@@ -293,10 +291,8 @@ func (c *VirtualCluster) NewNginxPod(namespace string) (*corev1.Pod, string) {
 	}
 
 	nginxPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "nginx-",
-			Namespace:    namespace,
-		},
+		GenerateName: "nginx-",
+		Namespace:    namespace,
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
 				Name:  "nginx",
@@ -510,10 +506,8 @@ func isArgFound(pod *corev1.Pod, arg string) bool {
 
 func newS3ConfigSecret(name, namespace, endpoint string) *corev1.Secret {
 	return &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
+		Name:      name,
+		Namespace: namespace,
 		StringData: map[string]string{
 			"etcd-s3-endpoint":           endpoint,
 			"etcd-s3-access-key":         s3MockAccessKey,
@@ -530,10 +524,8 @@ func newS3ConfigSecret(name, namespace, endpoint string) *corev1.Secret {
 
 func newSnapshot(name, namespace, s3ConfigSecretName string) *v1beta1.EtcdSnapshot {
 	s := &v1beta1.EtcdSnapshot{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "snapshot-",
-			Namespace:    namespace,
-		},
+		GenerateName: "snapshot-",
+		Namespace:    namespace,
 		Spec: v1beta1.EtcdSnapshotSpec{
 			ClusterRef: corev1.LocalObjectReference{
 				Name: name,

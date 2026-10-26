@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/k3k-kubelet/controller/syncer"
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -29,7 +28,7 @@ var IngressTests = func() {
 		ctx := context.Background()
 
 		ns := corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "ns-"},
+			GenerateName: "ns-",
 		}
 		err := hostTestEnv.k8sClient.Create(ctx, &ns)
 		Expect(err).NotTo(HaveOccurred())
@@ -37,10 +36,8 @@ var IngressTests = func() {
 		namespace = ns.Name
 
 		cluster = v1beta1.Cluster{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "cluster-",
-				Namespace:    namespace,
-			},
+			GenerateName: "cluster-",
+			Namespace:    namespace,
 			Spec: v1beta1.ClusterSpec{
 				Sync: &v1beta1.SyncConfig{
 					Ingresses: v1beta1.IngressSyncConfig{
@@ -62,7 +59,7 @@ var IngressTests = func() {
 	})
 
 	AfterEach(func() {
-		ns := corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+		ns := corev1.Namespace{Name: namespace}
 		err := hostTestEnv.k8sClient.Delete(context.Background(), &ns)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -71,29 +68,25 @@ var IngressTests = func() {
 		ctx := context.Background()
 
 		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "ingress-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: networkingv1.IngressSpec{
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: "test.com",
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: new(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: "test-service",
-												Port: networkingv1.ServiceBackendPort{
-													Name: "test-port",
-												},
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: new(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "test-service",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "test-port",
 											},
 										},
 									},
@@ -137,29 +130,25 @@ var IngressTests = func() {
 		ctx := context.Background()
 
 		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "ingress-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: networkingv1.IngressSpec{
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: "test.com",
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: new(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: "test-service",
-												Port: networkingv1.ServiceBackendPort{
-													Name: "test-port",
-												},
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: new(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "test-service",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "test-port",
 											},
 										},
 									},
@@ -223,29 +212,25 @@ var IngressTests = func() {
 		ctx := context.Background()
 
 		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "ingress-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: networkingv1.IngressSpec{
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: "test.com",
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: new(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: "test-service",
-												Port: networkingv1.ServiceBackendPort{
-													Name: "test-port",
-												},
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: new(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "test-service",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "test-port",
 											},
 										},
 									},
@@ -299,10 +284,8 @@ var IngressTests = func() {
 	It("will sync an Ingress with a TLS secret", func() {
 		ctx := context.Background()
 		ingressSecret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-secret-",
-				Namespace:    "default",
-			},
+			GenerateName: "ingress-secret-",
+			Namespace:    "default",
 			Data: map[string][]byte{
 				"ca.crt":  []byte("value"),
 				"tls.crt": []byte("value"),
@@ -314,29 +297,25 @@ var IngressTests = func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "ingress-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: networkingv1.IngressSpec{
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: "test.com",
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: new(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: "test-service",
-												Port: networkingv1.ServiceBackendPort{
-													Name: "test-port",
-												},
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: new(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "test-service",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "test-port",
 											},
 										},
 									},
@@ -395,10 +374,8 @@ var IngressTests = func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		ingressSecret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-secret-",
-				Namespace:    "default",
-			},
+			GenerateName: "ingress-secret-",
+			Namespace:    "default",
 			Data: map[string][]byte{
 				"ca.crt":  []byte("value"),
 				"tls.crt": []byte("value"),
@@ -410,29 +387,25 @@ var IngressTests = func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "ingress-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: networkingv1.IngressSpec{
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: "test.com",
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: new(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: "test-service",
-												Port: networkingv1.ServiceBackendPort{
-													Name: "test-port",
-												},
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: new(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "test-service",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "test-port",
 											},
 										},
 									},
@@ -492,29 +465,25 @@ var IngressTests = func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "ingress-",
-				Namespace:    "default",
-				Labels: map[string]string{
-					"foo": "bar",
-				},
+			GenerateName: "ingress-",
+			Namespace:    "default",
+			Labels: map[string]string{
+				"foo": "bar",
 			},
 			Spec: networkingv1.IngressSpec{
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: "test.com",
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: new(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: "test-service",
-												Port: networkingv1.ServiceBackendPort{
-													Name: "test-port",
-												},
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: new(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "test-service",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "test-port",
 											},
 										},
 									},

@@ -34,7 +34,7 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 		BeforeEach(func() {
 			ctx = context.Background()
 
-			createdNS := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{GenerateName: "ns-"}}
+			createdNS := &corev1.Namespace{GenerateName: "ns-"}
 			err := k8sClient.Create(context.Background(), createdNS)
 			Expect(err).To(Not(HaveOccurred()))
 
@@ -44,10 +44,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 		When("creating a Cluster", func() {
 			It("will be created with some defaults", func() {
 				cluster := &v1beta1.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						GenerateName: "cluster-",
-						Namespace:    namespace,
-					},
+					GenerateName: "cluster-",
+					Namespace:    namespace,
 				}
 
 				err := k8sClient.Create(ctx, cluster)
@@ -91,10 +89,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 				// check NetworkPolicy
 				expectedNetworkPolicy := &networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      k3kcontroller.SafeConcatNameWithPrefix(cluster.Name),
-						Namespace: cluster.Namespace,
-					},
+					Name:      k3kcontroller.SafeConcatNameWithPrefix(cluster.Name),
+					Namespace: cluster.Namespace,
 				}
 
 				err = k8sClient.Get(ctx, client.ObjectKeyFromObject(expectedNetworkPolicy), expectedNetworkPolicy)
@@ -118,8 +114,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 			When("a host Node advertises a non-default PodCIDR", func() {
 				It("excludes the real PodCIDR from the NetworkPolicy egress, not a hardcoded guess", func() {
 					node := &corev1.Node{
-						ObjectMeta: metav1.ObjectMeta{GenerateName: "node-"},
-						Spec:       corev1.NodeSpec{PodCIDR: "192.168.77.0/24"},
+						GenerateName: "node-",
+						Spec:         corev1.NodeSpec{PodCIDR: "192.168.77.0/24"},
 					}
 
 					Expect(k8sClient.Create(ctx, node)).To(Succeed())
@@ -128,19 +124,15 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 					})
 
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 					}
 
 					Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
 
 					expectedNetworkPolicy := &networkingv1.NetworkPolicy{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      k3kcontroller.SafeConcatNameWithPrefix(cluster.Name),
-							Namespace: cluster.Namespace,
-						},
+						Name:      k3kcontroller.SafeConcatNameWithPrefix(cluster.Name),
+						Namespace: cluster.Namespace,
 					}
 
 					Eventually(func(g Gomega) {
@@ -164,10 +156,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 			When("exposing the cluster with nodePort", func() {
 				It("will have a NodePort service", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								NodePort: &v1beta1.NodePortConfig{},
@@ -197,10 +187,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 				It("will have the specified ports exposed when specified", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								NodePort: &v1beta1.NodePortConfig{
@@ -247,10 +235,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 				It("will not expose the port when out of range", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								NodePort: &v1beta1.NodePortConfig{
@@ -293,10 +279,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 			When("exposing the cluster with loadbalancer", func() {
 				It("will have a LoadBalancer service with the default ports exposed", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								LoadBalancer: &v1beta1.LoadBalancerConfig{},
@@ -342,10 +326,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 				It("will have a LoadBalancer service with the specified class", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								LoadBalancer: &v1beta1.LoadBalancerConfig{
@@ -381,10 +363,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 			When("exposing the cluster with ingress", func() {
 				It("will not be provisioned without a DNS name in the tlsSANs", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								Ingress: &v1beta1.IngressConfig{},
@@ -425,10 +405,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 				It("will create an Ingress with only the DNS names from the tlsSANs", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							// the IP is not a valid Ingress host and must be skipped
 							TLSSANs: []string{"10.0.0.5", "my-cluster.example.com"},
@@ -474,10 +452,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 			When("exposing the cluster with nodePort and loadbalancer", func() {
 				It("will fail", func() {
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Expose: &v1beta1.ExposeConfig{
 								LoadBalancer: &v1beta1.LoadBalancerConfig{},
@@ -494,10 +470,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 				It("will create a statefulset with the correct addon volumes and volume mounts", func() {
 					// Create the addon secret first
 					addonSecret := &corev1.Secret{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "test-addon",
-							Namespace: namespace,
-						},
+						Name:      "test-addon",
+						Namespace: namespace,
 						Data: map[string][]byte{
 							"manifest.yaml": []byte("apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: test-cm\n"),
 						},
@@ -506,10 +480,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 					// Create the cluster with an addon referencing the secret
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Addons: []v1beta1.Addon{
 								{
@@ -572,19 +544,15 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 				It("will create volumes for multiple addons in the correct order", func() {
 					// Create multiple addon secrets
 					addonSecret1 := &corev1.Secret{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "addon-one",
-							Namespace: namespace,
-						},
+						Name:      "addon-one",
+						Namespace: namespace,
 						Data: map[string][]byte{
 							"manifest.yaml": []byte("apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: cm-one\n"),
 						},
 					}
 					addonSecret2 := &corev1.Secret{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "addon-two",
-							Namespace: namespace,
-						},
+						Name:      "addon-two",
+						Namespace: namespace,
 						Data: map[string][]byte{
 							"manifest.yaml": []byte("apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: cm-two\n"),
 						},
@@ -595,10 +563,8 @@ var _ = Describe("Cluster Controller", Label("controller"), Label("Cluster"), fu
 
 					// Create the cluster with multiple addons in specific order
 					cluster := &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							GenerateName: "cluster-",
-							Namespace:    namespace,
-						},
+						GenerateName: "cluster-",
+						Namespace:    namespace,
 						Spec: v1beta1.ClusterSpec{
 							Addons: []v1beta1.Addon{
 								{SecretRef: "addon-one"},

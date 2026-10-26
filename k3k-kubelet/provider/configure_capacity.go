@@ -127,9 +127,7 @@ func updateNodeCapacity(ctx context.Context, logger logr.Logger, hostClient clie
 
 		// get the node's quota and merge it with the current values
 		m := distributeQuotas(hostResourceMap, virtResourceMap, mergedQuota)
-		for name, value := range m[virtualNodeName] {
-			allocatable[name] = value
-		}
+		maps.Copy(allocatable, m[virtualNodeName])
 	}
 
 	var virtualNode corev1.Node

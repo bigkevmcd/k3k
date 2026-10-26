@@ -135,10 +135,8 @@ func patchPVC(ctx context.Context, clientset *kubernetes.Clientset) {
 	k3kDeployment := &deployments.Items[0]
 
 	pvc := &corev1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "coverage-data-pvc",
-			Namespace: k3kNamespace,
-		},
+		Name:      "coverage-data-pvc",
+		Namespace: k3kNamespace,
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{
 				corev1.ReadWriteOnce,
@@ -165,10 +163,8 @@ func patchPVC(ctx context.Context, clientset *kubernetes.Clientset) {
 
 	k3kSpec.Volumes = append(k3kSpec.Volumes, corev1.Volume{
 		Name: "tmp-covdata",
-		VolumeSource: corev1.VolumeSource{
-			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-				ClaimName: "coverage-data-pvc",
-			},
+		PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+			ClaimName: "coverage-data-pvc",
 		},
 	})
 
@@ -270,10 +266,8 @@ func dumpK3kCoverageData(ctx context.Context, folder string) {
 	GinkgoWriter.Printf("Downloading covdata from k3k controller %s/%s to %s\n", k3kNamespace, k3kPod.Name, folder)
 
 	tarPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tar",
-			Namespace: k3kNamespace,
-		},
+		Name:      "tar",
+		Namespace: k3kNamespace,
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
 				Name:    "tar",
@@ -286,10 +280,8 @@ func dumpK3kCoverageData(ctx context.Context, folder string) {
 			}},
 			Volumes: []corev1.Volume{{
 				Name: "tmp-covdata",
-				VolumeSource: corev1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: "coverage-data-pvc",
-					},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "coverage-data-pvc",
 				},
 			}},
 		},
@@ -402,14 +394,10 @@ func queryPostgres(ctx context.Context, namespace, query string) (string, error)
 
 func caCertSecret(name, namespace string, crt, key []byte) *corev1.Secret {
 	return &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
+		Name:       name,
+		Namespace:  namespace,
+		Kind:       "Secret",
+		APIVersion: "v1",
 		Data: map[string][]byte{
 			"tls.crt": crt,
 			"tls.key": key,
@@ -473,14 +461,10 @@ func privateRegistry(ctx context.Context, namespace string) error {
 	}
 
 	registryDeployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "private-registry",
-			Namespace: namespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Deployment",
-			APIVersion: "apps/v1",
-		},
+		Name:       "private-registry",
+		Namespace:  namespace,
+		Kind:       "Deployment",
+		APIVersion: "apps/v1",
 		Spec: appsv1.DeploymentSpec{
 			Replicas: new(int32(1)),
 			Selector: &metav1.LabelSelector{
@@ -518,26 +502,20 @@ func privateRegistry(ctx context.Context, namespace string) error {
 					Volumes: []corev1.Volume{
 						{
 							Name: "config",
-							VolumeSource: corev1.VolumeSource{
-								Secret: &corev1.SecretVolumeSource{
-									SecretName: "private-registry-config",
-								},
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: "private-registry-config",
 							},
 						},
 						{
 							Name: "ca-cert",
-							VolumeSource: corev1.VolumeSource{
-								Secret: &corev1.SecretVolumeSource{
-									SecretName: "private-registry-ca-cert",
-								},
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: "private-registry-ca-cert",
 							},
 						},
 						{
 							Name: "registry-cert",
-							VolumeSource: corev1.VolumeSource{
-								Secret: &corev1.SecretVolumeSource{
-									SecretName: "private-registry-cert",
-								},
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: "private-registry-cert",
 							},
 						},
 					},
@@ -551,14 +529,10 @@ func privateRegistry(ctx context.Context, namespace string) error {
 	}
 
 	registryService := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "private-registry",
-			Namespace: namespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
+		Name:       "private-registry",
+		Namespace:  namespace,
+		Kind:       "Service",
+		APIVersion: "v1",
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
 				"app": "private-registry",
@@ -578,10 +552,8 @@ func privateRegistry(ctx context.Context, namespace string) error {
 
 func buildRegistryNetPolicy(ctx context.Context, namespace string) error {
 	np := networkingv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "private-registry-test-netpol",
-			Namespace: namespace,
-		},
+		Name:      "private-registry-test-netpol",
+		Namespace: namespace,
 		Spec: networkingv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -626,16 +598,12 @@ func buildRegistryConfigSecret(tlsMap map[string]string, namespace, name string,
 	}
 
 	secret := &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Type: secretType,
-		Data: data,
+		Kind:       "Secret",
+		APIVersion: "v1",
+		Name:       name,
+		Namespace:  namespace,
+		Type:       secretType,
+		Data:       data,
 	}
 
 	return secret, nil
@@ -657,11 +625,9 @@ func deployS3MockInCluster(namespace string) {
 	dep.Spec.Template.Spec.Containers[0].ReadinessProbe = &corev1.Probe{
 		PeriodSeconds:       5,
 		InitialDelaySeconds: 5,
-		ProbeHandler: corev1.ProbeHandler{
-			HTTPGet: &corev1.HTTPGetAction{
-				Path: "/",
-				Port: intstr.FromInt(s3MockPort),
-			},
+		HTTPGet: &corev1.HTTPGetAction{
+			Path: "/",
+			Port: intstr.FromInt(s3MockPort),
 		},
 	}
 
@@ -669,7 +635,7 @@ func deployS3MockInCluster(namespace string) {
 	Expect(err).To(Not(HaveOccurred()))
 
 	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: "s3-mock", Namespace: namespace},
+		Name: "s3-mock", Namespace: namespace,
 		Spec: corev1.ServiceSpec{
 			Selector: labels,
 			Ports:    []corev1.ServicePort{{Port: s3MockPort, TargetPort: intstr.FromInt(s3MockPort)}},
@@ -707,10 +673,8 @@ func deployPostgresInCluster(cluster *v1beta1.Cluster) {
 	}
 	dep.Spec.Template.Spec.Containers[0].ReadinessProbe = &corev1.Probe{
 		PeriodSeconds: 2,
-		ProbeHandler: corev1.ProbeHandler{
-			Exec: &corev1.ExecAction{
-				Command: []string{"pg_isready", "-U", postgresUser, "-d", postgresDatabase},
-			},
+		Exec: &corev1.ExecAction{
+			Command: []string{"pg_isready", "-U", postgresUser, "-d", postgresDatabase},
 		},
 	}
 
@@ -718,7 +682,7 @@ func deployPostgresInCluster(cluster *v1beta1.Cluster) {
 	Expect(err).To(Not(HaveOccurred()))
 
 	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: "postgres-k3k", Namespace: cluster.Namespace},
+		Name: "postgres-k3k", Namespace: cluster.Namespace,
 		Spec: corev1.ServiceSpec{
 			Selector: labels,
 			Ports:    []corev1.ServicePort{{Port: postgresPort, TargetPort: intstr.FromInt(postgresPort)}},
@@ -763,7 +727,7 @@ func deployPostgresInCluster(cluster *v1beta1.Cluster) {
 
 func newDeployment(name, namespace, image string, labels map[string]string) *appsv1.Deployment {
 	return &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Name: name, Namespace: namespace,
 		Spec: appsv1.DeploymentSpec{
 			Replicas: new(int32(1)),
 			Selector: &metav1.LabelSelector{MatchLabels: labels},

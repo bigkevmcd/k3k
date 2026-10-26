@@ -43,17 +43,15 @@ var _ = When("Testing pod lifecycle event mirroring in shared mode cluster", Lab
 
 		By(fmt.Sprintf("Creating namespace %s in virtual cluster", virtNs))
 		_, err := virtualCluster.Client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{Name: virtNs},
+			Name: virtNs,
 		}, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		By(fmt.Sprintf("Creating pod %s in virtual cluster namespace %s", podName, virtNs))
 		pod := &corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: podName,
-				Labels: map[string]string{
-					"app": "event-sync-test",
-				},
+			Name: podName,
+			Labels: map[string]string{
+				"app": "event-sync-test",
 			},
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{

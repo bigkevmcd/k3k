@@ -99,17 +99,13 @@ func FindPodCIDRs(ctx context.Context, cl client.Client, clusterCIDR string) ([]
 
 func networkPolicy(namespaceName string, policy *v1beta1.VirtualClusterPolicy, cidrList []string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "NetworkPolicy",
-			APIVersion: "networking.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      k3kcontroller.SafeConcatNameWithPrefix(policy.Name),
-			Namespace: namespaceName,
-			Labels: map[string]string{
-				ManagedByLabelKey:  VirtualPolicyControllerName,
-				PolicyNameLabelKey: policy.Name,
-			},
+		Kind:       "NetworkPolicy",
+		APIVersion: "networking.k8s.io/v1",
+		Name:       k3kcontroller.SafeConcatNameWithPrefix(policy.Name),
+		Namespace:  namespaceName,
+		Labels: map[string]string{
+			ManagedByLabelKey:  VirtualPolicyControllerName,
+			PolicyNameLabelKey: policy.Name,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
 			// Isolate synced workload pods

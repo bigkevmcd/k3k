@@ -98,14 +98,10 @@ func (s *SharedAgent) config(ctx context.Context) error {
 	}
 
 	configSecret := &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      configSecretName(s.cluster.Name),
-			Namespace: s.cluster.Namespace,
-		},
+		Kind:       "Secret",
+		APIVersion: "v1",
+		Name:       configSecretName(s.cluster.Name),
+		Namespace:  s.cluster.Namespace,
 		Data: map[string][]byte{
 			"config.yaml": config,
 		},
@@ -142,15 +138,11 @@ func (s *SharedAgent) daemonset(ctx context.Context) error {
 	}
 
 	deploy := &appsv1.DaemonSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "DaemonSet",
-			APIVersion: "apps/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      s.Name(),
-			Namespace: s.cluster.Namespace,
-			Labels:    labels,
-		},
+		Kind:       "DaemonSet",
+		APIVersion: "apps/v1",
+		Name:       s.Name(),
+		Namespace:  s.cluster.Namespace,
+		Labels:     labels,
 		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
@@ -207,14 +199,12 @@ func (s *SharedAgent) podSpec(ctx context.Context) corev1.PodSpec {
 		Volumes: []corev1.Volume{
 			{
 				Name: "config",
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
-						SecretName: configSecretName(s.cluster.Name),
-						Items: []corev1.KeyToPath{
-							{
-								Key:  "config.yaml",
-								Path: "config.yaml",
-							},
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: configSecretName(s.cluster.Name),
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "config.yaml",
+							Path: "config.yaml",
 						},
 					},
 				},
@@ -226,12 +216,10 @@ func (s *SharedAgent) podSpec(ctx context.Context) corev1.PodSpec {
 				Image:           image,
 				ImagePullPolicy: corev1.PullPolicy(s.imagePullPolicy),
 				ReadinessProbe: &corev1.Probe{
-					ProbeHandler: corev1.ProbeHandler{
-						HTTPGet: &corev1.HTTPGetAction{
-							Scheme: corev1.URISchemeHTTPS,
-							Path:   "/readyz",
-							Port:   intstr.FromInt(s.kubeletPort),
-						},
+					HTTPGet: &corev1.HTTPGetAction{
+						Scheme: corev1.URISchemeHTTPS,
+						Path:   "/readyz",
+						Port:   intstr.FromInt(s.kubeletPort),
 					},
 					InitialDelaySeconds: 60,
 					FailureThreshold:    5,
@@ -333,14 +321,10 @@ func (s *SharedAgent) podSpec(ctx context.Context) corev1.PodSpec {
 
 func (s *SharedAgent) service(ctx context.Context) error {
 	svc := &corev1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      s.Name(),
-			Namespace: s.cluster.Namespace,
-		},
+		Kind:       "Service",
+		APIVersion: "v1",
+		Name:       s.Name(),
+		Namespace:  s.cluster.Namespace,
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeClusterIP,
 			Selector: map[string]string{
@@ -365,14 +349,10 @@ func (s *SharedAgent) dnsService(ctx context.Context) error {
 	dnsServiceName := controller.SafeConcatNameWithPrefix(s.cluster.Name, "kube-dns")
 
 	svc := &corev1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      dnsServiceName,
-			Namespace: s.cluster.Namespace,
-		},
+		Kind:       "Service",
+		APIVersion: "v1",
+		Name:       dnsServiceName,
+		Namespace:  s.cluster.Namespace,
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeClusterIP,
 			Selector: map[string]string{
@@ -407,14 +387,10 @@ func (s *SharedAgent) dnsService(ctx context.Context) error {
 
 func (s *SharedAgent) serviceAccount(ctx context.Context) error {
 	svcAccount := &corev1.ServiceAccount{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "ServiceAccount",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      s.Name(),
-			Namespace: s.cluster.Namespace,
-		},
+		Kind:       "ServiceAccount",
+		APIVersion: "v1",
+		Name:       s.Name(),
+		Namespace:  s.cluster.Namespace,
 	}
 
 	return s.ensureObject(ctx, svcAccount)
@@ -422,14 +398,10 @@ func (s *SharedAgent) serviceAccount(ctx context.Context) error {
 
 func (s *SharedAgent) role(ctx context.Context) error {
 	role := &rbacv1.Role{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Role",
-			APIVersion: "rbac.authorization.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      s.Name(),
-			Namespace: s.cluster.Namespace,
-		},
+		Kind:       "Role",
+		APIVersion: "rbac.authorization.k8s.io/v1",
+		Name:       s.Name(),
+		Namespace:  s.cluster.Namespace,
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
@@ -472,14 +444,10 @@ func (s *SharedAgent) role(ctx context.Context) error {
 
 func (s *SharedAgent) roleBinding(ctx context.Context) error {
 	roleBinding := &rbacv1.RoleBinding{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "RoleBinding",
-			APIVersion: "rbac.authorization.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      s.Name(),
-			Namespace: s.cluster.Namespace,
-		},
+		Kind:       "RoleBinding",
+		APIVersion: "rbac.authorization.k8s.io/v1",
+		Name:       s.Name(),
+		Namespace:  s.cluster.Namespace,
 		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "Role",

@@ -23,10 +23,8 @@ func newTranslator(clusterName, clusterNamespace string) *ToHostTranslator {
 
 func TestNewHostTranslator(t *testing.T) {
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-cluster",
-			Namespace: "my-namespace",
-		},
+		Name:      "my-cluster",
+		Namespace: "my-namespace",
 	}
 
 	tr := NewHostTranslator(cluster)
@@ -47,10 +45,8 @@ func TestTranslateTo(t *testing.T) {
 			clusterName:      "mycluster",
 			clusterNamespace: "host-ns",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "my-cm",
-					Namespace: "virt-ns",
-				},
+				Name:      "my-cm",
+				Namespace: "virt-ns",
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap, tr *ToHostTranslator) {
 				assert.Equal(t, "my-cm", obj.Annotations[ResourceNameAnnotation])
@@ -63,10 +59,8 @@ func TestTranslateTo(t *testing.T) {
 			clusterName:      "mycluster",
 			clusterNamespace: "host-ns",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "my-cm",
-					Namespace: "virt-ns",
-				},
+				Name:      "my-cm",
+				Namespace: "virt-ns",
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap, tr *ToHostTranslator) {
 				assert.Equal(t, tr.TranslateName("virt-ns", "my-cm"), obj.Name)
@@ -78,12 +72,10 @@ func TestTranslateTo(t *testing.T) {
 			clusterName:      "mycluster",
 			clusterNamespace: "host-ns",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "my-cm",
-					Namespace:       "virt-ns",
-					ResourceVersion: "123",
-					UID:             types.UID("abc-uid"),
-				},
+				Name:            "my-cm",
+				Namespace:       "virt-ns",
+				ResourceVersion: "123",
+				UID:             types.UID("abc-uid"),
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap, _ *ToHostTranslator) {
 				assert.Empty(t, obj.ResourceVersion)
@@ -95,14 +87,12 @@ func TestTranslateTo(t *testing.T) {
 			clusterName:      "mycluster",
 			clusterNamespace: "host-ns",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "my-cm",
-					Namespace: "virt-ns",
-					OwnerReferences: []metav1.OwnerReference{
-						{Name: "owner", UID: "owner-uid"},
-					},
-					Finalizers: []string{"my-finalizer"},
+				Name:      "my-cm",
+				Namespace: "virt-ns",
+				OwnerReferences: []metav1.OwnerReference{
+					{Name: "owner", UID: "owner-uid"},
 				},
+				Finalizers: []string{"my-finalizer"},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap, _ *ToHostTranslator) {
 				assert.Nil(t, obj.OwnerReferences)
@@ -114,12 +104,10 @@ func TestTranslateTo(t *testing.T) {
 			clusterName:      "mycluster",
 			clusterNamespace: "host-ns",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        "my-cm",
-					Namespace:   "virt-ns",
-					Annotations: map[string]string{"existing-annotation": "value"},
-					Labels:      map[string]string{"existing-label": "value"},
-				},
+				Name:        "my-cm",
+				Namespace:   "virt-ns",
+				Annotations: map[string]string{"existing-annotation": "value"},
+				Labels:      map[string]string{"existing-label": "value"},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap, _ *ToHostTranslator) {
 				assert.Equal(t, "value", obj.Annotations["existing-annotation"])
@@ -131,10 +119,8 @@ func TestTranslateTo(t *testing.T) {
 			clusterName:      "mycluster",
 			clusterNamespace: "host-ns",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "my-cm",
-					Namespace: "virt-ns",
-				},
+				Name:      "my-cm",
+				Namespace: "virt-ns",
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap, _ *ToHostTranslator) {
 				assert.NotNil(t, obj.Annotations)
@@ -161,16 +147,14 @@ func TestTranslateFrom(t *testing.T) {
 		{
 			name: "restores name and namespace from annotations",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "translated-name",
-					Namespace: "host-ns",
-					Annotations: map[string]string{
-						ResourceNameAnnotation:      "original-name",
-						ResourceNamespaceAnnotation: "original-ns",
-					},
-					Labels: map[string]string{
-						ClusterNameLabel: "mycluster",
-					},
+				Name:      "translated-name",
+				Namespace: "host-ns",
+				Annotations: map[string]string{
+					ResourceNameAnnotation:      "original-name",
+					ResourceNamespaceAnnotation: "original-ns",
+				},
+				Labels: map[string]string{
+					ClusterNameLabel: "mycluster",
 				},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap) {
@@ -181,17 +165,15 @@ func TestTranslateFrom(t *testing.T) {
 		{
 			name: "removes tracking annotations",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "translated-name",
-					Namespace: "host-ns",
-					Annotations: map[string]string{
-						ResourceNameAnnotation:      "original-name",
-						ResourceNamespaceAnnotation: "original-ns",
-						"other-annotation":          "keep-me",
-					},
-					Labels: map[string]string{
-						ClusterNameLabel: "mycluster",
-					},
+				Name:      "translated-name",
+				Namespace: "host-ns",
+				Annotations: map[string]string{
+					ResourceNameAnnotation:      "original-name",
+					ResourceNamespaceAnnotation: "original-ns",
+					"other-annotation":          "keep-me",
+				},
+				Labels: map[string]string{
+					ClusterNameLabel: "mycluster",
 				},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap) {
@@ -203,17 +185,15 @@ func TestTranslateFrom(t *testing.T) {
 		{
 			name: "removes cluster name label",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "translated-name",
-					Namespace: "host-ns",
-					Annotations: map[string]string{
-						ResourceNameAnnotation:      "original-name",
-						ResourceNamespaceAnnotation: "original-ns",
-					},
-					Labels: map[string]string{
-						ClusterNameLabel: "mycluster",
-						"other-label":    "keep-me",
-					},
+				Name:      "translated-name",
+				Namespace: "host-ns",
+				Annotations: map[string]string{
+					ResourceNameAnnotation:      "original-name",
+					ResourceNamespaceAnnotation: "original-ns",
+				},
+				Labels: map[string]string{
+					ClusterNameLabel: "mycluster",
+					"other-label":    "keep-me",
 				},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap) {
@@ -224,18 +204,16 @@ func TestTranslateFrom(t *testing.T) {
 		{
 			name: "clears resource version and UID",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "translated-name",
-					Namespace:       "host-ns",
-					ResourceVersion: "999",
-					UID:             types.UID("some-uid"),
-					Annotations: map[string]string{
-						ResourceNameAnnotation:      "original-name",
-						ResourceNamespaceAnnotation: "original-ns",
-					},
-					Labels: map[string]string{
-						ClusterNameLabel: "mycluster",
-					},
+				Name:            "translated-name",
+				Namespace:       "host-ns",
+				ResourceVersion: "999",
+				UID:             types.UID("some-uid"),
+				Annotations: map[string]string{
+					ResourceNameAnnotation:      "original-name",
+					ResourceNamespaceAnnotation: "original-ns",
+				},
+				Labels: map[string]string{
+					ClusterNameLabel: "mycluster",
 				},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap) {
@@ -246,19 +224,17 @@ func TestTranslateFrom(t *testing.T) {
 		{
 			name: "clears owner references",
 			obj: &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "translated-name",
-					Namespace: "host-ns",
-					Annotations: map[string]string{
-						ResourceNameAnnotation:      "original-name",
-						ResourceNamespaceAnnotation: "original-ns",
-					},
-					Labels: map[string]string{
-						ClusterNameLabel: "mycluster",
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{Name: "host-owner", UID: "host-owner-uid"},
-					},
+				Name:      "translated-name",
+				Namespace: "host-ns",
+				Annotations: map[string]string{
+					ResourceNameAnnotation:      "original-name",
+					ResourceNamespaceAnnotation: "original-ns",
+				},
+				Labels: map[string]string{
+					ClusterNameLabel: "mycluster",
+				},
+				OwnerReferences: []metav1.OwnerReference{
+					{Name: "host-owner", UID: "host-owner-uid"},
 				},
 			},
 			verify: func(t *testing.T, obj *corev1.ConfigMap) {
@@ -376,10 +352,8 @@ func TestNamespacedName(t *testing.T) {
 	tr := newTranslator("mycluster", "host-ns")
 
 	obj := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-cm",
-			Namespace: "virt-ns",
-		},
+		Name:      "my-cm",
+		Namespace: "virt-ns",
 	}
 
 	nn := tr.NamespacedName(obj)
@@ -392,15 +366,13 @@ func TestTranslateToFromRoundtrip(t *testing.T) {
 	tr := newTranslator("mycluster", "host-ns")
 
 	original := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-cm",
-			Namespace: "virt-ns",
-			Annotations: map[string]string{
-				"user-annotation": "user-value",
-			},
-			Labels: map[string]string{
-				"user-label": "user-value",
-			},
+		Name:      "my-cm",
+		Namespace: "virt-ns",
+		Annotations: map[string]string{
+			"user-annotation": "user-value",
+		},
+		Labels: map[string]string{
+			"user-label": "user-value",
 		},
 	}
 

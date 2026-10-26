@@ -13,7 +13,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -94,10 +93,8 @@ func clusterDelete(appCtx *AppContext) func(cmd *cobra.Command, args []string) e
 		}
 
 		cluster := v1beta1.Cluster{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
+			Name:      name,
+			Namespace: namespace,
 		}
 		if err := client.Get(ctx, ctrlclient.ObjectKeyFromObject(&cluster), &cluster); err != nil {
 			if apierrors.IsNotFound(err) {

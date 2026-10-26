@@ -11,7 +11,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 	"github.com/rancher/k3k/pkg/controller/policy"
@@ -74,7 +73,7 @@ func policyCreateAction(appCtx *AppContext, config *VirtualClusterPolicyCreateCo
 }
 
 func createNamespace(ctx context.Context, client client.Client, name, policyName string) error {
-	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: name}}
+	ns := &corev1.Namespace{Name: name}
 
 	if policyName != "" {
 		ns.Labels = map[string]string{
@@ -101,15 +100,11 @@ func createPolicy(ctx context.Context, client client.Client, config *VirtualClus
 	logrus.Infof("Creating policy '%s'", policyName)
 
 	policy := &v1beta1.VirtualClusterPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        policyName,
-			Labels:      parseKeyValuePairs(config.labels, "label"),
-			Annotations: parseKeyValuePairs(config.annotations, "annotation"),
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "VirtualClusterPolicy",
-			APIVersion: "k3k.io/v1beta1",
-		},
+		Name:        policyName,
+		Labels:      parseKeyValuePairs(config.labels, "label"),
+		Annotations: parseKeyValuePairs(config.annotations, "annotation"),
+		Kind:        "VirtualClusterPolicy",
+		APIVersion:  "k3k.io/v1beta1",
 		Spec: v1beta1.VirtualClusterPolicySpec{
 			AllowedMode: v1beta1.ClusterMode(config.mode),
 		},

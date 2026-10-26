@@ -13,7 +13,7 @@ func createTable[T runtime.Object](crd *apiextensionsv1.CustomResourceDefinition
 	printerColumns := getPrinterColumnsFromCRD(crd)
 
 	return &metav1.Table{
-		TypeMeta:          metav1.TypeMeta{APIVersion: "meta.k8s.io/v1", Kind: "Table"},
+		APIVersion: "meta.k8s.io/v1", Kind: "Table",
 		ColumnDefinitions: convertToTableColumns(printerColumns),
 		Rows:              createTableRows(objs, printerColumns),
 	}

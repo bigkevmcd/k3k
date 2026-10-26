@@ -53,10 +53,8 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-						},
-						MountPath: "/mount-dir-1",
+						SecretName: "secret-1",
+						MountPath:  "/mount-dir-1",
 					},
 				},
 				role: "server",
@@ -75,16 +73,12 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-						},
-						MountPath: "/mount-dir-1",
+						SecretName: "secret-1",
+						MountPath:  "/mount-dir-1",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-2",
-						},
-						MountPath: "/mount-dir-2",
+						SecretName: "secret-2",
+						MountPath:  "/mount-dir-2",
 					},
 				},
 				role: "server",
@@ -105,13 +99,11 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-							Items: []corev1.KeyToPath{
-								{
-									Key:  "key-1",
-									Path: "path-1",
-								},
+						SecretName: "secret-1",
+						Items: []corev1.KeyToPath{
+							{
+								Key:  "key-1",
+								Path: "path-1",
 							},
 						},
 						MountPath: "/mount-dir-1",
@@ -133,25 +125,21 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-							Items: []corev1.KeyToPath{
-								{
-									Key:  "key-1",
-									Path: "path-1",
-								},
+						SecretName: "secret-1",
+						Items: []corev1.KeyToPath{
+							{
+								Key:  "key-1",
+								Path: "path-1",
 							},
 						},
 						MountPath: "/mount-dir-1",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-2",
-							Items: []corev1.KeyToPath{
-								{
-									Key:  "key-2",
-									Path: "path-2",
-								},
+						SecretName: "secret-2",
+						Items: []corev1.KeyToPath{
+							{
+								Key:  "key-2",
+								Path: "path-2",
 							},
 						},
 						MountPath: "/mount-dir-2",
@@ -175,22 +163,16 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "z-secret",
-						},
-						MountPath: "/z",
+						SecretName: "z-secret",
+						MountPath:  "/z",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "a-secret",
-						},
-						MountPath: "/a",
+						SecretName: "a-secret",
+						MountPath:  "/a",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "m-secret",
-						},
-						MountPath: "/m",
+						SecretName: "m-secret",
+						MountPath:  "/m",
 					},
 				},
 				role: "server",
@@ -216,10 +198,8 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 						MountPath: "/mount-dir-1",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-2",
-						},
-						MountPath: "/mount-dir-2",
+						SecretName: "secret-2",
+						MountPath:  "/mount-dir-2",
 					},
 				},
 				role: "server",
@@ -238,16 +218,12 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-						},
-						MountPath: "",
+						SecretName: "secret-1",
+						MountPath:  "",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-2",
-						},
-						MountPath: "/mount-dir-2",
+						SecretName: "secret-2",
+						MountPath:  "/mount-dir-2",
 					},
 				},
 				role: "server",
@@ -266,11 +242,9 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-						},
-						MountPath: "/etc/rancher/k3s/registries.yaml",
-						SubPath:   "registries.yaml",
+						SecretName: "secret-1",
+						MountPath:  "/etc/rancher/k3s/registries.yaml",
+						SubPath:    "registries.yaml",
 					},
 				},
 				role: "server",
@@ -290,25 +264,19 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "server-secret",
-						},
-						MountPath: "/server",
-						Role:      "server",
+						SecretName: "server-secret",
+						MountPath:  "/server",
+						Role:       "server",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "agent-secret",
-						},
-						MountPath: "/agent",
-						Role:      "agent",
+						SecretName: "agent-secret",
+						MountPath:  "/agent",
+						Role:       "agent",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "all-secret",
-						},
-						MountPath: "/all",
-						Role:      "all",
+						SecretName: "all-secret",
+						MountPath:  "/all",
+						Role:       "all",
 					},
 				},
 				role: "server",
@@ -329,25 +297,19 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "server-secret",
-						},
-						MountPath: "/server",
-						Role:      "server",
+						SecretName: "server-secret",
+						MountPath:  "/server",
+						Role:       "server",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "agent-secret",
-						},
-						MountPath: "/agent",
-						Role:      "agent",
+						SecretName: "agent-secret",
+						MountPath:  "/agent",
+						Role:       "agent",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "all-secret",
-						},
-						MountPath: "/all",
-						Role:      "all",
+						SecretName: "all-secret",
+						MountPath:  "/all",
+						Role:       "all",
 					},
 				},
 				role: "agent",
@@ -368,18 +330,14 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "no-role-secret",
-						},
-						MountPath: "/no-role",
-						Role:      "",
+						SecretName: "no-role-secret",
+						MountPath:  "/no-role",
+						Role:       "",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "server-secret",
-						},
-						MountPath: "/server",
-						Role:      "server",
+						SecretName: "server-secret",
+						MountPath:  "/server",
+						Role:       "server",
 					},
 				},
 				role: "agent",
@@ -398,26 +356,20 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "registry-config",
-						},
-						MountPath: "/etc/rancher/k3s/registries.yaml",
-						SubPath:   "registries.yaml",
-						Role:      "all",
+						SecretName: "registry-config",
+						MountPath:  "/etc/rancher/k3s/registries.yaml",
+						SubPath:    "registries.yaml",
+						Role:       "all",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "server-config",
-						},
-						MountPath: "/etc/server",
-						Role:      "server",
+						SecretName: "server-config",
+						MountPath:  "/etc/server",
+						Role:       "server",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "agent-config",
-						},
-						MountPath: "/etc/agent",
-						Role:      "agent",
+						SecretName: "agent-config",
+						MountPath:  "/etc/agent",
+						Role:       "agent",
 					},
 				},
 				role: "server",
@@ -438,18 +390,14 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-1",
-						},
-						MountPath: "/secret-1",
-						Role:      "all",
+						SecretName: "secret-1",
+						MountPath:  "/secret-1",
+						Role:       "all",
 					},
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "secret-2",
-						},
-						MountPath: "/secret-2",
-						Role:      "all",
+						SecretName: "secret-2",
+						MountPath:  "/secret-2",
+						Role:       "all",
 					},
 				},
 				role: "server",
@@ -470,11 +418,9 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 			args: args{
 				secretMounts: []v1beta1.SecretMount{
 					{
-						SecretVolumeSource: corev1.SecretVolumeSource{
-							SecretName: "server-only",
-						},
-						MountPath: "/server-only",
-						Role:      "server",
+						SecretName: "server-only",
+						MountPath:  "/server-only",
+						Role:       "server",
 					},
 				},
 				role: "agent",
@@ -499,16 +445,12 @@ func Test_BuildSecretMountsVolume(t *testing.T) {
 func expectedVolume(name string, items []corev1.KeyToPath) corev1.Volume {
 	return corev1.Volume{
 		Name: name,
-		VolumeSource: corev1.VolumeSource{
-			Projected: &corev1.ProjectedVolumeSource{
-				Sources: []corev1.VolumeProjection{
-					{Secret: &corev1.SecretProjection{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: name,
-						},
-						Items: items,
-					}},
-				},
+		Projected: &corev1.ProjectedVolumeSource{
+			Sources: []corev1.VolumeProjection{
+				{Secret: &corev1.SecretProjection{
+					Name:  name,
+					Items: items,
+				}},
 			},
 		},
 	}

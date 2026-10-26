@@ -9,7 +9,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
@@ -21,53 +20,39 @@ func baseVirtualAgentPodSpec(v VirtualAgent) corev1.PodSpec {
 		Volumes: []corev1.Volume{
 			{
 				Name: "config",
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
-						SecretName: configSecretName(v.cluster.Name),
-						Items: []corev1.KeyToPath{
-							{
-								Key:  "config.yaml",
-								Path: "config.yaml",
-							},
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: configSecretName(v.cluster.Name),
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "config.yaml",
+							Path: "config.yaml",
 						},
 					},
 				},
 			},
 			{
-				Name: "run",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "run",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varrun",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varrun",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlibcni",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlibcni",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlog",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlog",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlibkubelet",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlibkubelet",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 			{
-				Name: "varlibrancherk3s",
-				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
-				},
+				Name:     "varlibrancherk3s",
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 		Containers: []corev1.Container{
@@ -132,24 +117,20 @@ func kataVirtualAgentPodSpec(v VirtualAgent) corev1.PodSpec {
 		Volumes: []corev1.Volume{
 			{
 				Name: "config",
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
-						SecretName: configSecretName(v.cluster.Name),
-						Items: []corev1.KeyToPath{
-							{
-								Key:  "config.yaml",
-								Path: "config.yaml",
-							},
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: configSecretName(v.cluster.Name),
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "config.yaml",
+							Path: "config.yaml",
 						},
 					},
 				},
 			},
 			{
 				Name: "dev-kmsg",
-				VolumeSource: corev1.VolumeSource{
-					HostPath: &corev1.HostPathVolumeSource{
-						Path: "/dev/kmsg",
-					},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/dev/kmsg",
 				},
 			},
 		},
@@ -231,15 +212,11 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						TypeMeta: metav1.TypeMeta{
-							Kind:       "Cluster",
-							APIVersion: "k3k.io/v1beta",
-						},
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-default",
-							Namespace: "virtual-test",
-						},
-						Spec: v1beta1.ClusterSpec{},
+						Kind:       "Cluster",
+						APIVersion: "k3k.io/v1beta",
+						Name:       "vc-default",
+						Namespace:  "virtual-test",
+						Spec:       v1beta1.ClusterSpec{},
 					},
 				},
 				Image: "rancher/k3k:latest",
@@ -253,10 +230,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-image",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-image",
+						Namespace: "virtual-test",
 					},
 				},
 				Image:           "rancher/k3k:v1.2.3",
@@ -275,10 +250,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-nodeselector",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-nodeselector",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							NodeSelector: map[string]string{
 								"disktype":             "ssd",
@@ -304,10 +277,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-nodeselector-policy",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-nodeselector-policy",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							NodeSelector: map[string]string{"spec-key": "spec-value"},
 						},
@@ -332,10 +303,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-nodeselector-policy-empty",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-nodeselector-policy-empty",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							NodeSelector: map[string]string{"spec-key": "spec-value"},
 						},
@@ -358,10 +327,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-agentenvs",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-agentenvs",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentArgs: []string{
 								"fake-arg-1=true",
@@ -384,10 +351,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-agentenvs",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-agentenvs",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentEnvs: []corev1.EnvVar{
 								{Name: "CUSTOM_VAR", Value: "custom-value"},
@@ -413,10 +378,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-affinity-spec",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-affinity-spec",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentAffinity: nodeAffinity("kubernetes.io/os", corev1.NodeSelectorOpIn, "linux"),
 						},
@@ -436,10 +399,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-affinity-policy",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-affinity-policy",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							AgentAffinity: nodeAffinity("spec-key", corev1.NodeSelectorOpIn, "spec-value"),
 						},
@@ -464,10 +425,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-pullsecrets",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-pullsecrets",
+						Namespace: "virtual-test",
 					},
 				},
 				Image: "rancher/k3k:latest",
@@ -489,10 +448,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-secctx-spec",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-secctx-spec",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: new(true),
@@ -516,10 +473,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-secctx-policy",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-secctx-policy",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: new(true),
@@ -552,10 +507,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-runtime-spec",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-runtime-spec",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							RuntimeClassName: new("kata"),
 						},
@@ -574,10 +527,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-runtime-policy",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-runtime-policy",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							RuntimeClassName: new("kata"),
 						},
@@ -602,10 +553,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-hostusers-spec",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-hostusers-spec",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							HostUsers: new(false),
 						},
@@ -625,10 +574,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-hostusers-policy",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-hostusers-policy",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							HostUsers: new(true),
 						},
@@ -653,10 +600,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vc-workerlimit",
-							Namespace: "virtual-test",
-						},
+						Name:      "vc-workerlimit",
+						Namespace: "virtual-test",
 						Spec: v1beta1.ClusterSpec{
 							WorkerLimit: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("500m"),
@@ -684,10 +629,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-workerResources",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-workerResources",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							WorkerResources: &corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
@@ -725,10 +668,8 @@ func Test_virtualAgentPodSpec(t *testing.T) {
 			virtualAgent: VirtualAgent{
 				Config: &Config{
 					cluster: &v1beta1.Cluster{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "sc-workerResources",
-							Namespace: "shared-test",
-						},
+						Name:      "sc-workerResources",
+						Namespace: "shared-test",
 						Spec: v1beta1.ClusterSpec{
 							WorkerLimit: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("100m"),

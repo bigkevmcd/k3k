@@ -14,7 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
@@ -95,7 +94,7 @@ func TestDeletePrunesTheKubeconfigContext(t *testing.T) {
 	scheme := newTestScheme(t)
 
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "k3k-foo"},
+		Name: "foo", Namespace: "k3k-foo",
 	}
 
 	existing := newTestConfig("prod", "https://prod:6443")
@@ -129,7 +128,7 @@ func TestDeleteAllPrunesTheKubeconfigContexts(t *testing.T) {
 
 	for _, name := range []string{"foo", "bar"} {
 		objs = append(objs, &v1beta1.Cluster{
-			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "myns"},
+			Name: name, Namespace: "myns",
 		})
 
 		existing.Clusters["myns/"+name] = clientcmdapi.NewCluster()
@@ -162,7 +161,7 @@ func TestDeleteWithoutKubeconfig(t *testing.T) {
 	scheme := newTestScheme(t)
 
 	cluster := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "k3k-foo"},
+		Name: "foo", Namespace: "k3k-foo",
 	}
 
 	path := filepath.Join(t.TempDir(), "missing")

@@ -6,8 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
 
@@ -92,7 +90,7 @@ func Test_validate(t *testing.T) {
 			}
 
 			cluster := &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{Name: clusterName, Namespace: "test-namespace"},
+				Name: clusterName, Namespace: "test-namespace",
 				Spec: v1beta1.ClusterSpec{
 					Mode:    mode,
 					TLSSANs: tt.tlsSANs,
@@ -118,7 +116,7 @@ func Test_validate(t *testing.T) {
 
 func newTestPolicy(allowedMode v1beta1.ClusterMode) *v1beta1.VirtualClusterPolicy {
 	return &v1beta1.VirtualClusterPolicy{
-		ObjectMeta: metav1.ObjectMeta{Name: "test-policy"},
-		Spec:       v1beta1.VirtualClusterPolicySpec{AllowedMode: allowedMode},
+		Name: "test-policy",
+		Spec: v1beta1.VirtualClusterPolicySpec{AllowedMode: allowedMode},
 	}
 }

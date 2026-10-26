@@ -41,11 +41,9 @@ var _ = When("a cluster with secretMounts configuration is used to load addons",
 
 		cluster.Spec.SecretMounts = []v1beta1.SecretMount{
 			{
-				SecretVolumeSource: corev1.SecretVolumeSource{
-					SecretName: addonsSecretName,
-				},
-				MountPath: secretMountManifestMountPath,
-				SubPath:   "nginx.yaml",
+				SecretName: addonsSecretName,
+				MountPath:  secretMountManifestMountPath,
+				SubPath:    "nginx.yaml",
 			},
 		}
 
@@ -218,14 +216,10 @@ func createAddonSecret(ctx context.Context, namespace string) error {
 	}
 
 	secret := &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      addonsSecretName,
-			Namespace: namespace,
-		},
+		Kind:       "Secret",
+		APIVersion: "v1",
+		Name:       addonsSecretName,
+		Namespace:  namespace,
 		Data: map[string][]byte{
 			"nginx.yaml": addonContent,
 		},

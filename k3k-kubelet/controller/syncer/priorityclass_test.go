@@ -152,7 +152,7 @@ func TestPriorityClassSyncerReconcileNotFound(t *testing.T) {
 		c.Spec.Sync.PriorityClasses = v1beta1.PriorityClassSyncConfig{Enabled: true}
 	}), nil)
 
-	_, err := syncer.Reconcile(t.Context(), reconcile.Request{NamespacedName: types.NamespacedName{Name: "missing", Namespace: virtualNamespace}})
+	_, err := syncer.Reconcile(t.Context(), reconcile.Request{Name: "missing", Namespace: virtualNamespace})
 	require.NoError(t, err)
 }
 
@@ -182,21 +182,17 @@ func newPriorityClassSyncer(t *testing.T, cluster *v1beta1.Cluster, virtualObjec
 
 func newTestPriorityClass(name string, value int32, labels map[string]string) *schedulingv1.PriorityClass {
 	return &schedulingv1.PriorityClass{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   name,
-			Labels: labels,
-		},
-		Value: value,
+		Name:   name,
+		Labels: labels,
+		Value:  value,
 	}
 }
 
 func newTestCluster(opts ...func(*v1beta1.Cluster)) *v1beta1.Cluster {
 	c := &v1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testClusterName,
-			Namespace: testClusterNamespace,
-			UID:       types.UID("cluster-uid"),
-		},
+		Name:      testClusterName,
+		Namespace: testClusterNamespace,
+		UID:       types.UID("cluster-uid"),
 		Spec: v1beta1.ClusterSpec{
 			Sync: &v1beta1.SyncConfig{},
 		},
