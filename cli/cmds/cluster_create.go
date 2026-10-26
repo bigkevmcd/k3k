@@ -214,7 +214,7 @@ func createAction(appCtx *AppContext, config *CreateConfig) func(cmd *cobra.Comm
 			kubeCluster.Server = serverURL.String()
 		}
 
-		if err := writeKubeconfig(appCtx, cluster, kubeconfig, config.standalonePath(cluster)); err != nil {
+		if err := writeKubeconfig(appCtx, cluster, kubeconfig, &config.kubeconfigOutFlags); err != nil {
 			return err
 		}
 

@@ -169,7 +169,7 @@ func generate(appCtx *AppContext, cfg *GenerateKubeconfigConfig) func(cmd *cobra
 
 		serverURL := kubeconfig.ServerURL(kubeConfig)
 
-		if err := writeKubeconfig(appCtx, &cluster, kubeConfig, cfg.standalonePath(&cluster)); err != nil {
+		if err := writeKubeconfig(appCtx, &cluster, kubeConfig, &cfg.kubeconfigOutFlags); err != nil {
 			return err
 		}
 
@@ -181,10 +181,12 @@ func generate(appCtx *AppContext, cfg *GenerateKubeconfigConfig) func(cmd *cobra
 	}
 }
 
-// writeKubeconfig writes the kubeconfig of the cluster to the standalone file at path, if
-// any, and always adds it as a context to the kubeconfig of the user.
-func writeKubeconfig(appCtx *AppContext, cluster *v1beta1.Cluster, config *clientcmdapi.Config, path string) error {
-	if path != "" {
+// writeKubeconfig writes the kubeconfig of the cluster to the standalone file selected by the
+// flags, if any, and always adds it as a context to the kubeconfig of the user.
+func writeKubeconfig(appCtx *AppContext, cluster *v1beta1.Cluster, config *clientcmdapi.Config, flags *kubeconfigOutFlags) error {
+	flags.applyTLS(config)
+
+	if path := flags.standalonePath(cluster); path != "" {
 		absPath, err := kubeconfig.Write(config, path)
 		if err != nil {
 			return err

@@ -9,6 +9,7 @@ import (
 
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/rancher/k3k/pkg/apis/k3k.io/v1beta1"
 )
@@ -61,4 +62,35 @@ func Test_standalonePath(t *testing.T) {
 			assert.Equal(t, tt.wantWarns, warned)
 		})
 	}
+}
+
+func Test_applyTLS(t *testing.T) {
+	newConfig := func() *clientcmdapi.Config {
+		config := clientcmdapi.NewConfig()
+		config.Clusters["default"] = &clientcmdapi.Cluster{
+			Server:                   "https://localhost:6443",
+			CertificateAuthorityData: []byte("ca"),
+		}
+
+		return config
+	}
+
+	t.Run("the certificate authority is kept by default", func(t *testing.T) {
+		config := newConfig()
+
+		(&kubeconfigOutFlags{}).applyTLS(config)
+
+		assert.Equal(t, []byte("ca"), config.Clusters["default"].CertificateAuthorityData)
+		assert.False(t, config.Clusters["default"].InsecureSkipTLSVerify)
+	})
+
+	t.Run("--kubeconfig-insecure-skip-tls-verify drops the certificate authority", func(t *testing.T) {
+		config := newConfig()
+
+		(&kubeconfigOutFlags{insecureSkipTLSVerify: true}).applyTLS(config)
+
+		assert.Empty(t, config.Clusters["default"].CertificateAuthorityData)
+		assert.True(t, config.Clusters["default"].InsecureSkipTLSVerify)
+		assert.Equal(t, "https://localhost:6443", config.Clusters["default"].Server)
+	})
 }

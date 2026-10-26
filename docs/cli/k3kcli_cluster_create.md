@@ -15,32 +15,33 @@ k3kcli cluster create [command options] NAME
 ### Options
 
 ```
-      --agent-args strings            agents extra arguments
-      --agent-envs strings            agents extra Envs
-      --agents int                    number of agents
-      --annotations stringArray       Annotations to add to the cluster object (e.g. key=value)
-      --cluster-cidr string           cluster CIDR
-      --custom-certs string           The path for custom certificate directory
-  -h, --help                          help for create
-      --kubeconfig-server string      override the kubeconfig server host
-      --labels stringArray            Labels to add to the cluster object (e.g. key=value)
-      --mirror-host-nodes             Mirror Host Cluster Nodes
-      --mode string                   k3k mode type (shared, virtual, hcp) (default "shared")
-  -n, --namespace string              namespace of the k3k cluster
-      --no-out                        do not write a standalone kubeconfig file
-      --out string                    also write a standalone kubeconfig of the cluster to this path
-      --persistence-type string       persistence mode for the nodes (dynamic, ephemeral) (default "dynamic")
-      --policy string                 The policy to create the cluster in
-      --server-args strings           servers extra arguments
-      --server-envs strings           servers extra Envs
-      --servers int                   number of servers (default 1)
-      --service-cidr string           service CIDR
-      --storage-class-name string     storage class name for dynamic persistence type
-      --storage-request-size string   storage size for dynamic persistence type
-      --timeout duration              The timeout for waiting for the cluster to become ready (e.g., 10s, 5m, 1h). (default 3m0s)
-      --tls-sans strings              additional Subject Alternative Names for the cluster server TLS certificate
-      --token string                  token of the cluster
-      --version string                k3s version
+      --agent-args strings                    agents extra arguments
+      --agent-envs strings                    agents extra Envs
+      --agents int                            number of agents
+      --annotations stringArray               Annotations to add to the cluster object (e.g. key=value)
+      --cluster-cidr string                   cluster CIDR
+      --custom-certs string                   The path for custom certificate directory
+  -h, --help                                  help for create
+      --kubeconfig-insecure-skip-tls-verify   generate a kubeconfig that skips the verification of the server certificate, without the certificate authority data (insecure, for testing only)
+      --kubeconfig-server string              override the kubeconfig server host
+      --labels stringArray                    Labels to add to the cluster object (e.g. key=value)
+      --mirror-host-nodes                     Mirror Host Cluster Nodes
+      --mode string                           k3k mode type (shared, virtual, hcp) (default "shared")
+  -n, --namespace string                      namespace of the k3k cluster
+      --no-out                                do not write a standalone kubeconfig file
+      --out string                            also write a standalone kubeconfig of the cluster to this path
+      --persistence-type string               persistence mode for the nodes (dynamic, ephemeral) (default "dynamic")
+      --policy string                         The policy to create the cluster in
+      --server-args strings                   servers extra arguments
+      --server-envs strings                   servers extra Envs
+      --servers int                           number of servers (default 1)
+      --service-cidr string                   service CIDR
+      --storage-class-name string             storage class name for dynamic persistence type
+      --storage-request-size string           storage size for dynamic persistence type
+      --timeout duration                      The timeout for waiting for the cluster to become ready (e.g., 10s, 5m, 1h). (default 3m0s)
+      --tls-sans strings                      additional Subject Alternative Names for the cluster server TLS certificate
+      --token string                          token of the cluster
+      --version string                        k3s version
 ```
 
 ### Options inherited from parent commands
