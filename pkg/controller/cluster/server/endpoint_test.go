@@ -313,6 +313,64 @@ func TestURLGeneration_TLSSANs(t *testing.T) {
 	}
 }
 
+// TestResolveEndpoint_TLSSANs tests that ResolveEndpoint keeps the host and reports the TLS SAN fallback
+// as the TLSServerName, while URL replaces the host with it.
+func TestResolveEndpoint_TLSSANs(t *testing.T) {
+	tests := []struct {
+		name                  string
+		specTLSSANs           []string
+		statusTLSSANs         []string
+		expectedTLSServerName string
+		expectedURL           string
+	}{
+		{
+			name:          "host in status TLSSANs",
+			specTLSSANs:   []string{"172.18.0.2"},
+			statusTLSSANs: []string{"10.43.0.100", "172.18.0.2"},
+			expectedURL:   "https://172.18.0.2:30443",
+		},
+		{
+			name:                  "host not in status, spec TLS SAN as server name",
+			specTLSSANs:           []string{"127.0.0.1"},
+			statusTLSSANs:         []string{"10.43.0.100", "127.0.0.1"},
+			expectedTLSServerName: "127.0.0.1",
+			expectedURL:           "https://127.0.0.1:30443",
+		},
+		{
+			name:                  "host not in status, status TLS SAN as server name",
+			statusTLSSANs:         []string{"10.43.0.100"},
+			expectedTLSServerName: "10.43.0.100",
+			expectedURL:           "https://10.43.0.100:30443",
+		},
+		{
+			name:        "no TLS SANs",
+			expectedURL: "https://172.18.0.2:30443",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cluster, svc := createNodePortService("test-cluster", "default", 443, 30443)
+			cluster.Spec.TLSSANs = tt.specTLSSANs
+			cluster.Status.TLSSANs = tt.statusTLSSANs
+
+			fakeClient := createFakeClient(t, cluster, svc)
+
+			endpoint, err := server.ResolveEndpoint(t.Context(), fakeClient, cluster, "172.18.0.2")
+			require.NoError(t, err)
+
+			assert.Equal(t, "https://172.18.0.2:30443", endpoint.URL.String())
+			assert.Equal(t, tt.expectedTLSServerName, endpoint.TLSServerName)
+			assert.Equal(t, tt.expectedURL, endpoint.VerifiableURL().String())
+
+			url, err := server.URL(t.Context(), fakeClient, cluster, "172.18.0.2")
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.expectedURL, url.String())
+		})
+	}
+}
+
 // Helper functions to create test objects
 func createClusterIPService(clusterName, namespace string, port int32) (*v1beta1.Cluster, *corev1.Service) {
 	cluster := &v1beta1.Cluster{

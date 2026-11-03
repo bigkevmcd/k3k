@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"strings"
@@ -533,15 +534,36 @@ func getClusterDetails(cluster *v1beta1.Cluster) (string, error) {
 
 // extractHost returns the hostname from the given server URL, stripping any
 // port and correctly handling IPv6 addresses (e.g. "[2001:db8::1]:6443").
-// If override is non-empty it is returned as-is.
+// If override is non-empty its hostname is returned instead: it can be a bare host,
+// a host and port, or a URL.
 func extractHost(serverURL, override string) (string, error) {
 	if override != "" {
-		return override, nil
+		return overrideHost(override)
 	}
 
 	u, err := url.Parse(serverURL)
 	if err != nil {
 		return "", err
+	}
+
+	return u.Hostname(), nil
+}
+
+// overrideHost returns the hostname of the --kubeconfig-server value, dropping any scheme and port.
+func overrideHost(override string) (string, error) {
+	// a bare IPv6 address can't be parsed as a URL host without brackets
+	if ip := net.ParseIP(override); ip != nil {
+		return ip.String(), nil
+	}
+
+	serverURL := override
+	if !strings.Contains(serverURL, "://") {
+		serverURL = "https://" + serverURL
+	}
+
+	u, err := url.Parse(serverURL)
+	if err != nil || u.Hostname() == "" {
+		return "", fmt.Errorf("invalid kubeconfig server %q: expected a host, a host and port, or a URL", override)
 	}
 
 	return u.Hostname(), nil

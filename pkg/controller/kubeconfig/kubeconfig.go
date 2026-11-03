@@ -30,6 +30,10 @@ type KubeConfig struct {
 	CN         string
 	ORG        []string
 	ExpiryDate time.Duration
+
+	// KeepServerHost keeps the given host in the server URL even when it's not one of the TLS SANs
+	// of the cluster, setting the tls-server-name to a TLS SAN instead of replacing the host with it.
+	KeepServerHost bool
 }
 
 // New returns a KubeConfig for a cluster admin certificate.
@@ -64,12 +68,17 @@ func (k *KubeConfig) Generate(ctx context.Context, client client.Client, cluster
 		return nil, err
 	}
 
-	serverURL, err := server.URL(ctx, client, cluster, hostServerIP)
+	endpoint, err := server.ResolveEndpoint(ctx, client, cluster, hostServerIP)
 	if err != nil {
 		return nil, err
 	}
 
-	config := NewConfig(serverURL.String(), serverCACert, adminCert, adminKey)
+	if !k.KeepServerHost {
+		return NewConfig(endpoint.VerifiableURL().String(), serverCACert, adminCert, adminKey), nil
+	}
+
+	config := NewConfig(endpoint.URL.String(), serverCACert, adminCert, adminKey)
+	config.Clusters[DefaultName].TLSServerName = endpoint.TLSServerName
 
 	return config, nil
 }

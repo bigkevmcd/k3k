@@ -132,6 +132,30 @@ func Test_extractHost(t *testing.T) {
 			override:  "custom.host",
 			want:      "custom.host",
 		},
+		{
+			name:      "override with port",
+			serverURL: "https://example.com:6443",
+			override:  "localhost:30001",
+			want:      "localhost",
+		},
+		{
+			name:      "override URL",
+			serverURL: "https://example.com:6443",
+			override:  "https://my-cluster.example.com:8443/path",
+			want:      "my-cluster.example.com",
+		},
+		{
+			name:      "override ipv6",
+			serverURL: "https://example.com:6443",
+			override:  "2001:db8::1",
+			want:      "2001:db8::1",
+		},
+		{
+			name:      "override ipv6 with port",
+			serverURL: "https://example.com:6443",
+			override:  "[2001:db8::1]:30001",
+			want:      "2001:db8::1",
+		},
 	}
 
 	for _, tt := range tests {
@@ -139,6 +163,15 @@ func Test_extractHost(t *testing.T) {
 			host, err := extractHost(tt.serverURL, tt.override)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, host)
+		})
+	}
+}
+
+func Test_extractHost_invalidOverride(t *testing.T) {
+	for _, override := range []string{"https://", "https://:6443", "bad host"} {
+		t.Run(override, func(t *testing.T) {
+			_, err := extractHost("https://example.com:6443", override)
+			assert.Error(t, err)
 		})
 	}
 }

@@ -3,7 +3,6 @@ package cmds
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -134,13 +133,13 @@ func generate(appCtx *AppContext, cfg *GenerateKubeconfigConfig) func(cmd *cobra
 			return err
 		}
 
-		host, err := resolveServerHost(appCtx.RestConfig.Host, cfg.kubeconfigServerHost)
+		host, err := extractHost(appCtx.RestConfig.Host, cfg.kubeconfigServerHost)
 		if err != nil {
 			return err
 		}
 
 		if cfg.kubeconfigServerHost != "" {
-			cfg.altNames = append(cfg.altNames, cfg.kubeconfigServerHost)
+			cfg.altNames = append(cfg.altNames, host)
 		}
 
 		certAltNames := certs.AddSANs(cfg.altNames)
@@ -154,6 +153,8 @@ func generate(appCtx *AppContext, cfg *GenerateKubeconfigConfig) func(cmd *cobra
 			ORG:        cfg.org,
 			ExpiryDate: time.Hour * 24 * time.Duration(cfg.expirationDays),
 			AltNames:   certAltNames,
+			// keep an explicit server host: the TLS SAN it would be replaced with might not be reachable
+			KeepServerHost: cfg.kubeconfigServerHost != "",
 		}
 
 		logrus.Infof("waiting for cluster to be available..")
@@ -169,6 +170,11 @@ func generate(appCtx *AppContext, cfg *GenerateKubeconfigConfig) func(cmd *cobra
 		}
 
 		serverURL := kubeconfig.ServerURL(kubeConfig)
+
+		if tlsServerName := kubeConfig.Clusters[ctrlkubeconfig.DefaultName].TLSServerName; tlsServerName != "" {
+			logrus.Warnf("'%s' is not a TLS SAN of the cluster, the kubeconfig verifies the server certificate against '%s' instead. "+
+				"Add '%s' to the cluster tlsSANs to have it in the certificate.", host, tlsServerName, host)
+		}
 
 		if err := writeKubeconfig(appCtx, &cluster, kubeConfig, cfg.standalonePath(&cluster)); err != nil {
 			return err
@@ -237,20 +243,4 @@ func removeKubeconfigContexts(appCtx *AppContext, clusters ...v1beta1.Cluster) {
 	for _, name := range removed {
 		logrus.Infof("Removed the '%s' context from the current kubeconfig (%s)", name, file.Path())
 	}
-}
-
-// resolveServerHost returns the host that should be embedded in the kubeconfig
-// server URL and used as the TLS-SAN. If override is set it takes precedence;
-// otherwise the host is extracted from restConfigHost.
-func resolveServerHost(restConfigHost, override string) (string, error) {
-	if override != "" {
-		return override, nil
-	}
-
-	u, err := url.Parse(restConfigHost)
-	if err != nil {
-		return "", err
-	}
-
-	return u.Hostname(), nil
 }
