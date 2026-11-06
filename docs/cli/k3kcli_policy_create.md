@@ -16,6 +16,8 @@ k3kcli policy create [command options] NAME
 
 ```
       --annotations stringArray   Annotations to add to the policy object (e.g. key=value)
+      --audit                     enforce the audit log of the K3s servers of the clusters bound to the policy
+      --audit-policy string       path to an audit.k8s.io/v1 Policy file for the audit log (implies --audit)
   -h, --help                      help for create
       --labels stringArray        Labels to add to the policy object (e.g. key=value)
       --mode string               The allowed mode type of the policy (default "shared")

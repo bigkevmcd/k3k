@@ -38,6 +38,81 @@ func Test_printClusterDetails(t *testing.T) {
     Type: dynamic`,
 		},
 		{
+			name: "cluster with audit",
+			cluster: &v1beta1.Cluster{
+				Spec: v1beta1.ClusterSpec{
+					Mode:    v1beta1.SharedClusterMode,
+					Version: "123",
+					Persistence: v1beta1.PersistenceConfig{
+						Type: v1beta1.DynamicPersistenceMode,
+					},
+					Audit: &v1beta1.AuditConfig{Enabled: true},
+				},
+				Status: v1beta1.ClusterStatus{
+					HostVersion: "456",
+				},
+			},
+			want: `Cluster details:
+  Mode: shared
+  Servers: 0
+  Version: 123 (Host: 456)
+  Persistence:
+    Type: dynamic
+  Audit: enabled`,
+		},
+		{
+			name: "cluster with audit enforced by the policy",
+			cluster: &v1beta1.Cluster{
+				Spec: v1beta1.ClusterSpec{
+					Mode:    v1beta1.SharedClusterMode,
+					Version: "123",
+					Persistence: v1beta1.PersistenceConfig{
+						Type: v1beta1.DynamicPersistenceMode,
+					},
+				},
+				Status: v1beta1.ClusterStatus{
+					HostVersion: "456",
+					Policy: &v1beta1.AppliedPolicy{
+						Name:  "policy",
+						Audit: &v1beta1.AuditConfig{Enabled: true},
+					},
+				},
+			},
+			want: `Cluster details:
+  Mode: shared
+  Servers: 0
+  Version: 123 (Host: 456)
+  Persistence:
+    Type: dynamic
+  Audit: enabled`,
+		},
+		{
+			name: "cluster with audit disabled by the policy",
+			cluster: &v1beta1.Cluster{
+				Spec: v1beta1.ClusterSpec{
+					Mode:    v1beta1.SharedClusterMode,
+					Version: "123",
+					Persistence: v1beta1.PersistenceConfig{
+						Type: v1beta1.DynamicPersistenceMode,
+					},
+					Audit: &v1beta1.AuditConfig{Enabled: true},
+				},
+				Status: v1beta1.ClusterStatus{
+					HostVersion: "456",
+					Policy: &v1beta1.AppliedPolicy{
+						Name:  "policy",
+						Audit: &v1beta1.AuditConfig{},
+					},
+				},
+			},
+			want: `Cluster details:
+  Mode: shared
+  Servers: 0
+  Version: 123 (Host: 456)
+  Persistence:
+    Type: dynamic`,
+		},
+		{
 			name: "simple cluster with no version",
 			cluster: &v1beta1.Cluster{
 				Spec: v1beta1.ClusterSpec{

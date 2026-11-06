@@ -17,6 +17,8 @@ k3kcli cluster update [command options] NAME
 ```
       --agents int32              number of agents
       --annotations stringArray   Annotations to add to the cluster object (e.g. key=value)
+      --audit                     enable the audit log of the K3s servers (--audit=false disables it)
+      --audit-policy string       path to an audit.k8s.io/v1 Policy file for the audit log (implies --audit)
   -h, --help                      help for update
       --labels stringArray        Labels to add to the cluster object (e.g. key=value)
   -n, --namespace string          namespace of the k3k cluster

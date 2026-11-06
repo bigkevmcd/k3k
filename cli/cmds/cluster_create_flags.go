@@ -33,6 +33,7 @@ func createFlags(cmd *cobra.Command, cfg *CreateConfig) {
 	cmd.Flags().StringVar(&cfg.kubeconfigServerHost, "kubeconfig-server", "", "override the kubeconfig server host")
 	cmd.Flags().StringVar(&cfg.policy, "policy", "", "The policy to create the cluster in")
 	cmd.Flags().StringVar(&cfg.customCertsPath, "custom-certs", "", "The path for custom certificate directory")
+	cfg.register(cmd, "enable the audit log of the K3s servers")
 	cmd.Flags().DurationVar(&cfg.timeout, "timeout", 3*time.Minute, "The timeout for waiting for the cluster to become ready (e.g., 10s, 5m, 1h).")
 
 	mustRegisterFlagCompletion(cmd, "mode", completeClusterMode)

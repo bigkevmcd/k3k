@@ -217,6 +217,14 @@ When enabled, K3k:
 kubectl logs -n k3k-mycluster k3k-mycluster-server-0 -c audit-log
 ```
 
+With the cli, use the `--audit` flag, and optionally `--audit-policy` with the path of a policy file:
+
+```bash
+k3kcli cluster create --audit --audit-policy ./audit-policy.yaml mycluster
+```
+
+`k3kcli cluster update --audit` turns the audit log on for an existing cluster, and `--audit=false` turns it off.
+
 The audit log is stored in an `emptyDir` volume and rotated every 100MB, keeping one backup. Collect it from the sidecar stdout if you need to keep it longer.
 
 A [VirtualClusterPolicy](./virtualclusterpolicy.md#6-enforcing-audit-logging-audit) can enforce the audit configuration. When it does, its configuration takes precedence over the one of the clusters: a policy can turn the audit log on, and it can also turn it off (`enabled: false`) even for clusters that enable it.

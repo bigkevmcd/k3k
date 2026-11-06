@@ -161,6 +161,8 @@ spec:
     enabled: true
 ```
 
+With the cli: `k3kcli policy create --audit [--audit-policy ./audit-policy.yaml] audit-policy`.
+
 **Example:** Disable the audit log for all the clusters.
 
 ```yaml

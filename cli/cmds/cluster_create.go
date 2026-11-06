@@ -35,6 +35,7 @@ import (
 // CreateConfig holds the flags of the "cluster create" command.
 type CreateConfig struct {
 	kubeconfigOutFlags
+	auditFlags
 
 	token                string
 	clusterCIDR          string
@@ -285,6 +286,14 @@ func newCluster(name, namespace string, config *CreateConfig) (*v1beta1.Cluster,
 			MirrorHostNodes: config.mirrorHostNodes,
 		},
 	}
+
+	audit, err := config.auditConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	cluster.Spec.Audit = audit
+
 	if config.storageClassName == "" {
 		cluster.Spec.Persistence.StorageClassName = nil
 	}
@@ -477,7 +486,8 @@ const clusterDetailsTemplate = `Cluster details:
   Persistence:
     Type: {{.Persistence.Type}}{{ if .Persistence.StorageClassName }}
     StorageClass: {{ .Persistence.StorageClassName }}{{ end }}{{ if .Persistence.StorageRequestSize }}
-    Size: {{ .Persistence.StorageRequestSize }}{{ end }}{{ if .Labels }}
+    Size: {{ .Persistence.StorageRequestSize }}{{ end }}{{ if .Audit }}
+  Audit: enabled{{ end }}{{ if .Labels }}
   Labels: {{ range $key, $value := .Labels }}
     {{$key}}: {{$value}}{{ end }}{{ end }}{{ if .Annotations }}
   Annotations: {{ range $key, $value := .Annotations }}
@@ -497,6 +507,7 @@ func getClusterDetails(cluster *v1beta1.Cluster) (string, error) {
 		Version     string
 		HostVersion string
 		Persistence persistenceConfig
+		Audit       bool
 		Labels      map[string]string
 		Annotations map[string]string
 	}
@@ -507,6 +518,7 @@ func getClusterDetails(cluster *v1beta1.Cluster) (string, error) {
 		Agents:      ptr.Deref(cluster.Spec.Agents, 0),
 		Version:     cluster.Spec.Version,
 		HostVersion: cluster.Status.HostVersion,
+		Audit:       server.Audit(cluster) != nil,
 		Annotations: cluster.Annotations,
 		Labels:      cluster.Labels,
 	}

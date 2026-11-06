@@ -19,6 +19,8 @@ k3kcli cluster create [command options] NAME
       --agent-envs strings            agents extra Envs
       --agents int                    number of agents
       --annotations stringArray       Annotations to add to the cluster object (e.g. key=value)
+      --audit                         enable the audit log of the K3s servers
+      --audit-policy string           path to an audit.k8s.io/v1 Policy file for the audit log (implies --audit)
       --cluster-cidr string           cluster CIDR
       --custom-certs string           The path for custom certificate directory
   -h, --help                          help for create

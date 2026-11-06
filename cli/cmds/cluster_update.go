@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/blang/semver/v4"
@@ -12,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/ptr"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -21,6 +23,8 @@ import (
 
 // UpdateConfig holds the flags of the "cluster update" command.
 type UpdateConfig struct {
+	auditFlags
+
 	servers     int32
 	agents      int32
 	labels      []string
@@ -56,6 +60,7 @@ func updateFlags(cmd *cobra.Command, cfg *UpdateConfig) {
 	cmd.Flags().StringArrayVar(&cfg.labels, "labels", []string{}, "Labels to add to the cluster object (e.g. key=value)")
 	cmd.Flags().StringArrayVar(&cfg.annotations, "annotations", []string{}, "Annotations to add to the cluster object (e.g. key=value)")
 	cmd.Flags().StringVar(&cfg.version, "version", "", "k3s version")
+	cfg.register(cmd, "enable the audit log of the K3s servers (--audit=false disables it)")
 	cmd.Flags().BoolVarP(&cfg.noConfirm, "no-confirm", "y", false, "Skip interactive approval before applying update")
 }
 
@@ -135,6 +140,13 @@ func updateAction(appCtx *AppContext, config *UpdateConfig) func(cmd *cobra.Comm
 			}
 		}
 
+		auditChanges, err := updateAudit(cmd, config, &virtualCluster)
+		if err != nil {
+			return err
+		}
+
+		changes = append(changes, auditChanges...)
+
 		var labelChanges []change
 
 		if cmd.Flags().Changed("labels") {
@@ -176,6 +188,63 @@ func updateAction(appCtx *AppContext, config *UpdateConfig) func(cmd *cobra.Comm
 
 		return nil
 	}
+}
+
+// updateAudit applies the audit flags to the cluster, and returns the resulting changes.
+func updateAudit(cmd *cobra.Command, config *UpdateConfig, cluster *v1beta1.Cluster) ([]change, error) {
+	auditChanged, policyChanged := cmd.Flags().Changed("audit"), cmd.Flags().Changed("audit-policy")
+	if !auditChanged && !policyChanged {
+		return nil, nil
+	}
+
+	if auditChanged && !config.audit && policyChanged {
+		return nil, errors.New("--audit-policy cannot be used with --audit=false")
+	}
+
+	if policyChanged && config.auditPolicy == "" {
+		return nil, errors.New("--audit-policy requires the path of a policy file")
+	}
+
+	oldAudit := ptr.Deref(cluster.Spec.Audit, v1beta1.AuditConfig{})
+	newAudit := oldAudit
+
+	if auditChanged {
+		newAudit.Enabled = config.audit
+	}
+
+	if policyChanged {
+		audit, err := config.auditConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		newAudit = *audit
+	}
+
+	var changes []change
+
+	if oldAudit.Enabled != newAudit.Enabled {
+		changes = append(changes, change{"Audit", strconv.FormatBool(oldAudit.Enabled), strconv.FormatBool(newAudit.Enabled)})
+	}
+
+	if oldAudit.Policy != newAudit.Policy {
+		newPolicy := fmt.Sprintf("%s (%s)", auditPolicyName(newAudit.Policy), config.auditPolicy)
+		changes = append(changes, change{"Audit policy", auditPolicyName(oldAudit.Policy), newPolicy})
+	}
+
+	if len(changes) > 0 {
+		cluster.Spec.Audit = &newAudit
+	}
+
+	return changes, nil
+}
+
+func auditPolicyName(policy string) string {
+	if policy == "" {
+		return "default"
+	}
+
+	return "custom"
 }
 
 func confirmClusterUpdate(cluster *v1beta1.Cluster) bool {

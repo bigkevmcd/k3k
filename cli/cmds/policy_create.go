@@ -19,6 +19,8 @@ import (
 
 // VirtualClusterPolicyCreateConfig holds the flags of the "policy create" command.
 type VirtualClusterPolicyCreateConfig struct {
+	auditFlags
+
 	mode        string
 	labels      []string
 	annotations []string
@@ -51,6 +53,7 @@ func NewPolicyCreateCmd(appCtx *AppContext) *cobra.Command {
 	cmd.Flags().StringArrayVar(&config.annotations, "annotations", []string{}, "Annotations to add to the policy object (e.g. key=value)")
 	cmd.Flags().StringSliceVar(&config.namespaces, "namespace", []string{}, "The namespaces where to bind the policy")
 	cmd.Flags().BoolVar(&config.overwrite, "overwrite", false, "Overwrite namespace binding of existing policy")
+	config.register(cmd, "enforce the audit log of the K3s servers of the clusters bound to the policy")
 
 	mustRegisterFlagCompletion(cmd, "mode", completeClusterMode)
 	mustRegisterFlagCompletion(cmd, "namespace", completeNamespaces)
@@ -100,6 +103,11 @@ func createNamespace(ctx context.Context, client client.Client, name, policyName
 func createPolicy(ctx context.Context, client client.Client, config *VirtualClusterPolicyCreateConfig, policyName string) (*v1beta1.VirtualClusterPolicy, error) {
 	logrus.Infof("Creating policy '%s'", policyName)
 
+	audit, err := config.auditConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	policy := &v1beta1.VirtualClusterPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        policyName,
@@ -112,6 +120,7 @@ func createPolicy(ctx context.Context, client client.Client, config *VirtualClus
 		},
 		Spec: v1beta1.VirtualClusterPolicySpec{
 			AllowedMode: v1beta1.ClusterMode(config.mode),
+			Audit:       audit,
 		},
 	}
 
